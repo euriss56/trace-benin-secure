@@ -18,7 +18,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
+  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

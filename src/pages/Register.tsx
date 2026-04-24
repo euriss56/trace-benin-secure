@@ -54,7 +54,7 @@ export default function Register() {
       title: t('auth.createdTitle'),
       description: t('auth.createdDesc'),
     });
-    navigate('/login');
+    navigate('/dashboard');
   };
 
   return (
