@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
-import { Shield, LogOut, Map as MapIcon, LayoutDashboard, Moon, Sun } from 'lucide-react';
+import { Shield, LogOut, Map as MapIcon, LayoutDashboard, Moon, Sun, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -12,9 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LANGS } from '@/i18n';
 
 export function Navbar() {
   const { user, role, signOut } = useAuth();
+  const { t, i18n } = useTranslation();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
@@ -30,6 +33,17 @@ export function Navbar() {
     document.documentElement.classList.toggle('dark', next === 'dark');
     localStorage.setItem('tib-theme', next);
   };
+
+  const changeLang = (code: string) => {
+    void i18n.changeLanguage(code);
+    document.documentElement.lang = code;
+  };
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language]);
+
+  const currentLang = SUPPORTED_LANGS.find((l) => l.code === i18n.resolvedLanguage) ?? SUPPORTED_LANGS[0];
 
   const canSeeMap = role === 'enqueteur' || role === 'admin';
 
@@ -53,32 +67,64 @@ export function Navbar() {
 
           <nav className="hidden items-center gap-6 md:flex">
             <NavLink to="/" end className={linkClass}>
-              Accueil
+              {t('nav.home')}
             </NavLink>
             <NavLink to="/verify" className={linkClass}>
-              Vérifier IMEI
+              {t('nav.verify')}
             </NavLink>
             {user && (
               <NavLink to="/declare" className={linkClass}>
-                Déclarer un vol
+                {t('nav.declare')}
               </NavLink>
             )}
             {canSeeMap && (
               <NavLink to="/map" className={linkClass}>
-                Carte
+                {t('nav.map')}
               </NavLink>
             )}
             <NavLink to="/privacy" className={linkClass}>
-              Confidentialité
+              {t('nav.privacy')}
             </NavLink>
           </nav>
 
           <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={t('common.language')}
+                  className="gap-1.5 px-2"
+                >
+                  <span aria-hidden>{currentLang.flag}</span>
+                  <span className="text-xs font-semibold">{currentLang.label}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel className="flex items-center gap-2 text-xs">
+                  <Languages className="h-3.5 w-3.5" />
+                  {t('common.language')}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {SUPPORTED_LANGS.map((l) => (
+                  <DropdownMenuItem
+                    key={l.code}
+                    onClick={() => changeLang(l.code)}
+                    className={cn(l.code === currentLang.code && 'bg-accent')}
+                  >
+                    <span className="mr-2" aria-hidden>{l.flag}</span>
+                    <span className="font-semibold mr-2">{l.label}</span>
+                    <span className="text-muted-foreground text-xs">{l.name}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              aria-label="Basculer le thème"
+              aria-label={t('nav.toggleTheme')}
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </Button>
@@ -86,10 +132,10 @@ export function Navbar() {
             {!user ? (
               <>
                 <Button asChild variant="ghost" size="sm">
-                  <Link to="/login">Connexion</Link>
+                  <Link to="/login">{t('nav.login')}</Link>
                 </Button>
                 <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
-                  <Link to="/register">S'inscrire</Link>
+                  <Link to="/register">{t('nav.register')}</Link>
                 </Button>
               </>
             ) : (
@@ -110,21 +156,21 @@ export function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Tableau de bord
+                      {t('nav.dashboard')}
                     </Link>
                   </DropdownMenuItem>
                   {canSeeMap && (
                     <DropdownMenuItem asChild>
                       <Link to="/map">
                         <MapIcon className="mr-2 h-4 w-4" />
-                        Carte
+                        {t('nav.map')}
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Déconnexion
+                    {t('nav.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

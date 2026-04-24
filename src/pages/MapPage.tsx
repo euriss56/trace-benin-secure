@@ -23,12 +23,11 @@ import {
   type Quartier,
 } from '@/lib/quartiers';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
-// Fix default icon paths for Leaflet (we use CircleMarker so this is just a precaution)
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => string })._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
@@ -52,6 +51,7 @@ const COTONOU_CENTER: [number, number] = [6.3654, 2.4183];
 
 export default function MapPage() {
   const { user, role, loading } = useAuth();
+  const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<DeclarationRow[]>([]);
   const [period, setPeriod] = useState<Period>('30');
   const [status, setStatus] = useState<Status>('all');
@@ -70,18 +70,17 @@ export default function MapPage() {
       .limit(2000)
       .then(({ data, error }) => {
         if (error) {
-          toast.error('Erreur de chargement', { description: error.message });
+          toast.error(t('map.loadError'), { description: error.message });
         } else {
           setRows((data ?? []) as DeclarationRow[]);
         }
         setFetching(false);
       });
-  }, [user, canSee]);
+  }, [user, canSee, t]);
 
   const filtered = useMemo(() => {
     const now = Date.now();
-    const cutoff =
-      period === 'all' ? 0 : now - parseInt(period, 10) * 24 * 60 * 60 * 1000;
+    const cutoff = period === 'all' ? 0 : now - parseInt(period, 10) * 24 * 60 * 60 * 1000;
     return rows.filter((r) => {
       if (status !== 'all' && r.status !== status) return false;
       if (quartier !== 'all' && r.quartier !== quartier) return false;
@@ -106,7 +105,7 @@ export default function MapPage() {
 
   const exportCsv = () => {
     if (filtered.length === 0) {
-      toast.info('Aucune donnée à exporter');
+      toast.info(t('map.nothingToExport'));
       return;
     }
     const header = ['reference', 'imei', 'brand', 'model', 'quartier', 'status', 'stolen_at', 'created_at'];
@@ -140,11 +139,16 @@ export default function MapPage() {
     : s === 'in_progress' ? 'bg-warning text-warning-foreground'
     : 'bg-destructive text-destructive-foreground';
 
+  const statusText = (s: DeclarationRow['status']) =>
+    s === 'declared' ? t('map.statusDeclared')
+    : s === 'in_progress' ? t('map.statusInProgress')
+    : t('map.statusResolved');
+
   return (
     <>
       <Helmet>
-        <title>Carte des signalements — TraceIMEI-BJ</title>
-        <meta name="description" content="Carte des signalements de vols d'appareils par quartier de Cotonou. Accès restreint aux enquêteurs." />
+        <title>{t('map.metaTitle')}</title>
+        <meta name="description" content={t('map.metaDescription')} />
       </Helmet>
 
       <div className="container py-8">
@@ -152,15 +156,13 @@ export default function MapPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <MapPin className="h-7 w-7 text-primary" />
-              Carte des signalements
+              {t('map.title')}
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Vue agrégée par quartier — aucune coordonnée GPS exacte n'est affichée.
-            </p>
+            <p className="text-muted-foreground mt-1">{t('map.subtitle')}</p>
           </div>
           <Button onClick={exportCsv} variant="outline">
             <Download className="mr-2 h-4 w-4" />
-            Exporter CSV ({filtered.length})
+            {t('map.exportCsv', { count: filtered.length })}
           </Button>
         </div>
 
@@ -168,40 +170,40 @@ export default function MapPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              Filtres
+              {t('map.filters')}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Période</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('map.period')}</label>
               <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7">7 derniers jours</SelectItem>
-                  <SelectItem value="30">30 derniers jours</SelectItem>
-                  <SelectItem value="90">90 derniers jours</SelectItem>
-                  <SelectItem value="all">Tout l'historique</SelectItem>
+                  <SelectItem value="7">{t('map.period7')}</SelectItem>
+                  <SelectItem value="30">{t('map.period30')}</SelectItem>
+                  <SelectItem value="90">{t('map.period90')}</SelectItem>
+                  <SelectItem value="all">{t('map.periodAll')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Statut</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('map.statusLabel')}</label>
               <Select value={status} onValueChange={(v) => setStatus(v as Status)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="declared">Déclaré</SelectItem>
-                  <SelectItem value="in_progress">En cours</SelectItem>
-                  <SelectItem value="resolved">Résolu</SelectItem>
+                  <SelectItem value="all">{t('map.statusAll')}</SelectItem>
+                  <SelectItem value="declared">{t('map.statusDeclared')}</SelectItem>
+                  <SelectItem value="in_progress">{t('map.statusInProgress')}</SelectItem>
+                  <SelectItem value="resolved">{t('map.statusResolved')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Quartier</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('map.quartierLabel')}</label>
               <Select value={quartier} onValueChange={(v) => setQuartier(v as Quartier | 'all')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les quartiers</SelectItem>
+                  <SelectItem value="all">{t('map.quartierAll')}</SelectItem>
                   {COTONOU_QUARTIERS.map((q) => (
                     <SelectItem key={q} value={q}>{q}</SelectItem>
                   ))}
@@ -241,13 +243,13 @@ export default function MapPage() {
                       }}
                     >
                       <Tooltip direction="top" offset={[0, -4]} opacity={1}>
-                        <strong>{q}</strong> — {items.length} signalement{items.length > 1 ? 's' : ''}
+                        <strong>{q}</strong> — {t('map.tooltipReports', { count: items.length })}
                       </Tooltip>
                       <Popup maxHeight={200}>
                         <div className="text-sm">
                           <div className="font-semibold mb-1">{q}</div>
                           <div className="text-xs text-muted-foreground mb-2">
-                            {items.length} signalement{items.length > 1 ? 's' : ''}
+                            {t('map.tooltipReports', { count: items.length })}
                           </div>
                           <ul className="space-y-1 max-h-32 overflow-auto">
                             {items.slice(0, 8).map((it) => (
@@ -268,23 +270,23 @@ export default function MapPage() {
 
         <Card className="mt-4">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Détail des signalements ({filtered.length})</CardTitle>
+            <CardTitle className="text-sm">{t('map.detail', { count: filtered.length })}</CardTitle>
           </CardHeader>
           <CardContent>
             {fetching ? (
-              <div className="text-sm text-muted-foreground">Chargement…</div>
+              <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
             ) : filtered.length === 0 ? (
-              <div className="text-sm text-muted-foreground">Aucun signalement ne correspond aux filtres.</div>
+              <div className="text-sm text-muted-foreground">{t('map.noResults')}</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                      <th className="py-2 pr-3">Référence</th>
-                      <th className="py-2 pr-3">Appareil</th>
-                      <th className="py-2 pr-3">Quartier</th>
-                      <th className="py-2 pr-3">Statut</th>
-                      <th className="py-2 pr-3">Déclaré le</th>
+                      <th className="py-2 pr-3">{t('map.tableRef')}</th>
+                      <th className="py-2 pr-3">{t('map.tableDevice')}</th>
+                      <th className="py-2 pr-3">{t('map.tableQuartier')}</th>
+                      <th className="py-2 pr-3">{t('map.tableStatus')}</th>
+                      <th className="py-2 pr-3">{t('map.tableDeclaredOn')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -294,12 +296,10 @@ export default function MapPage() {
                         <td className="py-2 pr-3">{r.brand} {r.model}</td>
                         <td className="py-2 pr-3">{r.quartier}</td>
                         <td className="py-2 pr-3">
-                          <Badge className={statusColor(r.status)}>
-                            {r.status === 'declared' ? 'Déclaré' : r.status === 'in_progress' ? 'En cours' : 'Résolu'}
-                          </Badge>
+                          <Badge className={statusColor(r.status)}>{statusText(r.status)}</Badge>
                         </td>
                         <td className="py-2 pr-3 text-xs text-muted-foreground">
-                          {new Date(r.created_at).toLocaleDateString('fr-FR')}
+                          {new Date(r.created_at).toLocaleDateString(i18n.language)}
                         </td>
                       </tr>
                     ))}
@@ -307,7 +307,7 @@ export default function MapPage() {
                 </table>
                 {filtered.length > 100 && (
                   <div className="text-xs text-muted-foreground mt-2">
-                    Affichage limité à 100 lignes — utilisez l'export CSV pour la liste complète.
+                    {t('map.limitNotice')}
                   </div>
                 )}
               </div>
@@ -317,10 +317,7 @@ export default function MapPage() {
 
         <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4 text-xs text-muted-foreground flex items-start gap-2">
           <ShieldAlert className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-          <p>
-            Conforme à la loi béninoise n° 2017-20 portant code du numérique. Aucune coordonnée GPS exacte n'est collectée
-            ni stockée. Les données de localisation sont limitées au niveau quartier uniquement.
-          </p>
+          <p>{t('map.legalNotice')}</p>
         </div>
       </div>
     </>

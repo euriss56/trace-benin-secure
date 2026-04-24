@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface DeclRow {
   id: string;
@@ -18,21 +19,22 @@ interface DeclRow {
   created_at: string;
 }
 
-const statusLabel: Record<DeclRow['status'], string> = {
-  declared: 'Déclaré',
-  in_progress: 'En cours',
-  resolved: 'Résolu',
-};
-const statusClass: Record<DeclRow['status'], string> = {
-  declared: 'bg-destructive text-destructive-foreground',
-  in_progress: 'bg-warning text-warning-foreground',
-  resolved: 'bg-success text-success-foreground',
-};
-
 export function MyDeclarationsView() {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<DeclRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const statusLabel: Record<DeclRow['status'], string> = {
+    declared: t('dashboard.cases.statusDeclared'),
+    in_progress: t('dashboard.cases.statusInProgress'),
+    resolved: t('dashboard.cases.statusResolved'),
+  };
+  const statusClass: Record<DeclRow['status'], string> = {
+    declared: 'bg-destructive text-destructive-foreground',
+    in_progress: 'bg-warning text-warning-foreground',
+    resolved: 'bg-success text-success-foreground',
+  };
 
   useEffect(() => {
     if (!user || !isSupabaseConfigured) { setLoading(false); return; }
@@ -50,27 +52,27 @@ export function MyDeclarationsView() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Mes déclarations de vol</CardTitle>
+        <CardTitle>{t('dashboard.declarations.title')}</CardTitle>
         <Button asChild size="sm">
-          <Link to="/declare"><Plus className="mr-1 h-4 w-4" />Nouvelle</Link>
+          <Link to="/declare"><Plus className="mr-1 h-4 w-4" />{t('dashboard.declarations.newButton')}</Link>
         </Button>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-sm text-muted-foreground">Chargement…</div>
+          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
         ) : rows.length === 0 ? (
-          <div className="text-sm text-muted-foreground">Aucune déclaration enregistrée.</div>
+          <div className="text-sm text-muted-foreground">{t('dashboard.declarations.empty')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">Référence</th>
-                  <th className="py-2 pr-3">Appareil</th>
-                  <th className="py-2 pr-3">IMEI</th>
-                  <th className="py-2 pr-3">Quartier</th>
-                  <th className="py-2 pr-3">Statut</th>
-                  <th className="py-2 pr-3">Date</th>
+                  <th className="py-2 pr-3">{t('dashboard.declarations.tableRef')}</th>
+                  <th className="py-2 pr-3">{t('dashboard.declarations.tableDevice')}</th>
+                  <th className="py-2 pr-3">{t('dashboard.declarations.tableImei')}</th>
+                  <th className="py-2 pr-3">{t('dashboard.declarations.tableQuartier')}</th>
+                  <th className="py-2 pr-3">{t('dashboard.declarations.tableStatus')}</th>
+                  <th className="py-2 pr-3">{t('dashboard.declarations.tableDate')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,7 +86,7 @@ export function MyDeclarationsView() {
                       <Badge className={statusClass[r.status]}>{statusLabel[r.status]}</Badge>
                     </td>
                     <td className="py-2 pr-3 text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleDateString('fr-FR')}
+                      {new Date(r.created_at).toLocaleDateString(i18n.language)}
                     </td>
                   </tr>
                 ))}

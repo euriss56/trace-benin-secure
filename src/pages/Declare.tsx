@@ -33,34 +33,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { isValidLuhn, sanitizeImei } from "@/lib/luhn";
 import { COTONOU_QUARTIERS } from "@/lib/quartiers";
 import { generateDeclarationReference } from "@/lib/declaration-ref";
+import { useTranslation } from "react-i18next";
 
-const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 Mo
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
-const schema = z.object({
-  device_brand: z.string().trim().min(1, "Marque requise").max(60),
-  device_model: z.string().trim().min(1, "Modèle requis").max(80),
-  device_reference: z.string().trim().max(80).optional().or(z.literal("")),
-  imei: z
-    .string()
-    .length(15, "L'IMEI doit contenir exactement 15 chiffres")
-    .refine(isValidLuhn, "Format Luhn invalide"),
-  description: z
-    .string()
-    .trim()
-    .min(20, "Décrivez les circonstances du vol (20 caractères min)")
-    .max(2000),
-  theft_date: z
-    .string()
-    .min(1, "Date requise")
-    .refine((d) => new Date(d) <= new Date(), "La date ne peut pas être dans le futur"),
-  quartier: z.enum(COTONOU_QUARTIERS, { message: "Sélectionnez un quartier" }),
-});
+// Zod schema relies on i18n keys (resolved at runtime via t() inside component)
+const buildSchema = (t: (k: string) => string) =>
+  z.object({
+    device_brand: z.string().trim().min(1, t("declare.errors.brand")).max(60),
+    device_model: z.string().trim().min(1, t("declare.errors.model")).max(80),
+    device_reference: z.string().trim().max(80).optional().or(z.literal("")),
+    imei: z
+      .string()
+      .length(15, t("declare.errors.imeiLength"))
+      .refine(isValidLuhn, t("declare.errors.imeiLuhn")),
+    description: z.string().trim().min(20, t("declare.errors.descriptionMin")).max(2000),
+    theft_date: z
+      .string()
+      .min(1, t("declare.errors.dateRequired"))
+      .refine((d) => new Date(d) <= new Date(), t("declare.errors.dateFuture")),
+    quartier: z.enum(COTONOU_QUARTIERS, { message: t("declare.errors.quartierRequired") }),
+  });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof buildSchema>>;
 
 export default function Declare() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [photo, setPhoto] = useState<File | null>(null);
@@ -69,7 +69,6 @@ export default function Declare() {
   const [createdRef, setCreatedRef] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Garde d'authentification
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login?redirect=/declare", { replace: true });
@@ -77,7 +76,7 @@ export default function Declare() {
   }, [authLoading, user, navigate]);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(buildSchema(t)),
     defaultValues: {
       device_brand: "",
       device_model: "",
@@ -96,11 +95,11 @@ export default function Declare() {
       return;
     }
     if (!ALLOWED_MIMES.includes(file.type)) {
-      setPhotoError("Format non supporté — utilisez JPG, PNG ou WebP.");
+      setPhotoError(t("declare.photoFormatError"));
       return;
     }
     if (file.size > MAX_PHOTO_SIZE) {
-      setPhotoError(`Fichier trop volumineux (${(file.size / 1024 / 1024).toFixed(1)} Mo). Limite : 5 Mo.`);
+      setPhotoError(t("declare.photoSizeError", { size: (file.size / 1024 / 1024).toFixed(1) }));
       return;
     }
     setPhoto(file);
@@ -110,7 +109,6 @@ export default function Declare() {
     if (!user) return;
     setSubmitting(true);
     try {
-      // 1. Upload photo (optionnelle) dans le bucket {user_id}/{ref}.{ext}
       let photo_path: string | null = null;
       const reference = await generateDeclarationReference();
 
@@ -124,7 +122,6 @@ export default function Declare() {
         photo_path = path;
       }
 
-      // 2. Insertion en base
       const { error: insErr } = await supabase.from("declarations").insert({
         reference,
         user_id: user.id,
@@ -145,7 +142,7 @@ export default function Declare() {
     } catch (err) {
       console.error(err);
       toast({
-        title: "Échec de la déclaration",
+        title: t("declare.submitErrorTitle"),
         description: (err as Error).message,
         variant: "destructive",
       });
@@ -175,54 +172,46 @@ export default function Declare() {
   return (
     <>
       <Helmet>
-        <title>Déclarer un vol — TraceIMEI-BJ</title>
-        <meta
-          name="description"
-          content="Déclarez le vol de votre téléphone au Bénin : marque, modèle, IMEI, quartier de Cotonou, photo. Référence officielle générée."
-        />
+        <title>{t("declare.metaTitle")}</title>
+        <meta name="description" content={t("declare.metaDescription")} />
         <link rel="canonical" href="/declare" />
       </Helmet>
 
       <main className="container max-w-2xl py-10 space-y-6">
         <header className="space-y-2">
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
-            <ShieldAlert className="h-3.5 w-3.5 text-destructive" /> Déclaration de vol
+            <ShieldAlert className="h-3.5 w-3.5 text-destructive" /> {t("declare.badge")}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Signaler un appareil <span className="text-gradient-primary">volé</span>
+            {t("declare.titlePrefix")} <span className="text-gradient-primary">{t("declare.titleHighlight")}</span>
           </h1>
-          <p className="text-muted-foreground">
-            Remplissez ce formulaire pour enregistrer la déclaration auprès de TraceIMEI-BJ. Une référence
-            officielle vous sera remise.
-          </p>
+          <p className="text-muted-foreground">{t("declare.subtitle")}</p>
         </header>
 
         <Alert>
           <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Confidentialité</AlertTitle>
-          <AlertDescription>
-            Aucune coordonnée GPS exacte n'est collectée — la localisation est limitée au quartier (loi n° 2017-20).
-          </AlertDescription>
+          <AlertTitle>{t("declare.privacyTitle")}</AlertTitle>
+          <AlertDescription>{t("declare.privacyDesc")}</AlertDescription>
         </Alert>
 
         <Card>
           <CardHeader>
-            <CardTitle>Informations sur l'appareil</CardTitle>
-            <CardDescription>Tous les champs marqués sont obligatoires.</CardDescription>
+            <CardTitle>{t("declare.cardTitle")}</CardTitle>
+            <CardDescription>{t("declare.cardDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="device_brand">Marque *</Label>
-                  <Input id="device_brand" placeholder="Samsung, Apple, Tecno…" {...form.register("device_brand")} />
+                  <Label htmlFor="device_brand">{t("declare.brand")} *</Label>
+                  <Input id="device_brand" placeholder={t("declare.brandPlaceholder")} {...form.register("device_brand")} />
                   {form.formState.errors.device_brand && (
                     <p className="text-xs text-destructive">{form.formState.errors.device_brand.message}</p>
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="device_model">Modèle *</Label>
-                  <Input id="device_model" placeholder="Galaxy S22, iPhone 13…" {...form.register("device_model")} />
+                  <Label htmlFor="device_model">{t("declare.model")} *</Label>
+                  <Input id="device_model" placeholder={t("declare.modelPlaceholder")} {...form.register("device_model")} />
                   {form.formState.errors.device_model && (
                     <p className="text-xs text-destructive">{form.formState.errors.device_model.message}</p>
                   )}
@@ -230,21 +219,21 @@ export default function Declare() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="device_reference">Référence appareil (optionnel)</Label>
+                <Label htmlFor="device_reference">{t("declare.deviceRef")}</Label>
                 <Input
                   id="device_reference"
-                  placeholder="Numéro de série, code interne…"
+                  placeholder={t("declare.deviceRefPlaceholder")}
                   {...form.register("device_reference")}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="imei">IMEI (15 chiffres) *</Label>
+                <Label htmlFor="imei">{t("declare.imei")} *</Label>
                 <Input
                   id="imei"
                   inputMode="numeric"
                   maxLength={15}
-                  placeholder="123456789012345"
+                  placeholder={t("declare.imeiPlaceholder")}
                   className={`font-mono tracking-widest ${
                     imeiLuhnOk === null
                       ? ""
@@ -263,7 +252,7 @@ export default function Declare() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="theft_date">Date du vol *</Label>
+                  <Label htmlFor="theft_date">{t("declare.theftDate")} *</Label>
                   <Input
                     id="theft_date"
                     type="date"
@@ -275,7 +264,7 @@ export default function Declare() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="quartier">Quartier (Cotonou) *</Label>
+                  <Label htmlFor="quartier">{t("declare.quartier")} *</Label>
                   <Select
                     value={form.watch("quartier")}
                     onValueChange={(v) =>
@@ -283,7 +272,7 @@ export default function Declare() {
                     }
                   >
                     <SelectTrigger id="quartier">
-                      <SelectValue placeholder="Sélectionnez…" />
+                      <SelectValue placeholder={t("declare.quartierPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {COTONOU_QUARTIERS.map((q) => (
@@ -300,11 +289,11 @@ export default function Declare() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="description">Circonstances du vol *</Label>
+                <Label htmlFor="description">{t("declare.description")} *</Label>
                 <Textarea
                   id="description"
                   rows={5}
-                  placeholder="Lieu précis, heure approximative, témoins éventuels…"
+                  placeholder={t("declare.descriptionPlaceholder")}
                   {...form.register("description")}
                 />
                 {form.formState.errors.description && (
@@ -313,14 +302,14 @@ export default function Declare() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="photo">Photo de l'appareil (optionnel)</Label>
+                <Label htmlFor="photo">{t("declare.photo")}</Label>
                 <div className="flex items-center gap-3">
                   <label
                     htmlFor="photo"
                     className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     <Upload className="h-4 w-4" />
-                    Choisir un fichier
+                    {t("declare.chooseFile")}
                   </label>
                   <input
                     id="photo"
@@ -336,13 +325,13 @@ export default function Declare() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">JPG, PNG ou WebP. Maximum 5 Mo.</p>
+                <p className="text-xs text-muted-foreground">{t("declare.photoHelp")}</p>
                 {photoError && <p className="text-xs text-destructive">{photoError}</p>}
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={submitting}>
                 {submitting ? <Loader2 className="animate-spin" /> : <ShieldAlert />}
-                Enregistrer la déclaration
+                {t("declare.submit")}
               </Button>
             </form>
           </CardContent>
@@ -354,23 +343,21 @@ export default function Declare() {
               <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-success/10 ring-1 ring-success/30">
                 <CheckCircle2 className="h-7 w-7 text-success" />
               </div>
-              <DialogTitle className="text-center">Déclaration enregistrée</DialogTitle>
-              <DialogDescription className="text-center">
-                Conservez précieusement cette référence — elle sera demandée par les forces de l'ordre.
-              </DialogDescription>
+              <DialogTitle className="text-center">{t("declare.successTitle")}</DialogTitle>
+              <DialogDescription className="text-center">{t("declare.successDesc")}</DialogDescription>
             </DialogHeader>
             <div className="rounded-lg bg-muted p-4 text-center">
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                Référence officielle
+                {t("declare.officialRef")}
               </div>
               <div className="font-mono text-2xl font-bold tracking-wider">{createdRef}</div>
             </div>
             <DialogFooter className="sm:justify-center gap-2">
               <Button variant="outline" onClick={copyRef}>
                 {copied ? <CheckCircle2 className="text-success" /> : <Copy />}
-                {copied ? "Copié !" : "Copier la référence"}
+                {copied ? t("declare.copied") : t("declare.copy")}
               </Button>
-              <Button onClick={() => navigate("/")}>Retour à l'accueil</Button>
+              <Button onClick={() => navigate("/")}>{t("declare.backHome")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

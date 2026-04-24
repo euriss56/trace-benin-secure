@@ -15,28 +15,30 @@ import {
 } from '@/components/ui/select';
 import { useAuth, AppRole } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-
-const schema = z.object({
-  email: z.string().trim().email('Email invalide').max(255),
-  password: z.string().min(8, 'Au moins 8 caractères').max(72),
-  role: z.enum(['particulier', 'dealer', 'technicien']),
-});
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
   const { signUp } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<AppRole>('particulier');
   const [loading, setLoading] = useState(false);
 
+  const schema = z.object({
+    email: z.string().trim().email(t('auth.emailInvalid')).max(255),
+    password: z.string().min(8, t('auth.passwordMin')).max(72),
+    role: z.enum(['particulier', 'dealer', 'technicien']),
+  });
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse({ email, password, role });
     if (!parsed.success) {
       toast({
-        title: 'Validation',
-        description: parsed.error.issues[0]?.message ?? 'Données invalides',
+        title: t('auth.validationTitle'),
+        description: parsed.error.issues[0]?.message ?? '',
         variant: 'destructive',
       });
       return;
@@ -45,12 +47,12 @@ export default function Register() {
     const { error } = await signUp(parsed.data.email, parsed.data.password, parsed.data.role);
     setLoading(false);
     if (error) {
-      toast({ title: 'Inscription impossible', description: error, variant: 'destructive' });
+      toast({ title: t('auth.registerFailTitle'), description: error, variant: 'destructive' });
       return;
     }
     toast({
-      title: 'Compte créé',
-      description: 'Vérifiez votre email pour confirmer votre compte.',
+      title: t('auth.createdTitle'),
+      description: t('auth.createdDesc'),
     });
     navigate('/login');
   };
@@ -62,24 +64,24 @@ export default function Register() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Shield className="h-6 w-6" />
           </div>
-          <CardTitle>Créer un compte</CardTitle>
-          <CardDescription>Rejoignez la communauté TraceIMEI-BJ</CardDescription>
+          <CardTitle>{t('auth.registerTitle')}</CardTitle>
+          <CardDescription>{t('auth.registerDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="vous@exemple.bj"
+                placeholder={t('auth.emailPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -87,33 +89,31 @@ export default function Register() {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimum 8 caractères"
+                placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role">Je suis…</Label>
+              <Label htmlFor="role">{t('auth.iAm')}</Label>
               <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
                 <SelectTrigger id="role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="particulier">Particulier</SelectItem>
-                  <SelectItem value="dealer">Dealer / Revendeur</SelectItem>
-                  <SelectItem value="technicien">Réparateur / Technicien</SelectItem>
+                  <SelectItem value="particulier">{t('auth.rolePart')}</SelectItem>
+                  <SelectItem value="dealer">{t('auth.roleDealer')}</SelectItem>
+                  <SelectItem value="technicien">{t('auth.roleTech')}</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Les rôles enquêteur et admin sont attribués manuellement par l'équipe.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('auth.rolesNote')}</p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Création…' : 'Créer mon compte'}
+              {loading ? t('auth.registerLoading') : t('auth.registerSubmit')}
             </Button>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Déjà un compte ?{' '}
+            {t('auth.haveAccount')}{' '}
             <Link to="/login" className="font-medium text-primary hover:underline">
-              Se connecter
+              {t('auth.loginLink')}
             </Link>
           </p>
         </CardContent>

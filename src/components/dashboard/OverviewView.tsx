@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Award, History, Smartphone, ShieldCheck, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
 
 interface Stats {
   monthCount: number;
@@ -14,6 +15,7 @@ interface Stats {
 
 export function OverviewView() {
   const { user, role } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Stats>({ monthCount: 0, totalCount: 0, declarationCount: 0, stolenHits: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -37,10 +39,10 @@ export function OverviewView() {
       supabase.from('verifications').select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('status', 'stolen'),
-    ]).then(([m, t, d, s]) => {
+    ]).then(([m, tt, d, s]) => {
       setStats({
         monthCount: m.count ?? 0,
-        totalCount: t.count ?? 0,
+        totalCount: tt.count ?? 0,
         declarationCount: d.count ?? 0,
         stolenHits: s.count ?? 0,
       });
@@ -54,9 +56,9 @@ export function OverviewView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Vue d'ensemble</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.overview.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Bienvenue {user?.email?.split('@')[0]} —{' '}
+          {t('dashboard.overview.welcome', { name: user?.email?.split('@')[0] ?? '' })}{' '}
           <span className="uppercase text-xs tracking-wide text-primary">{role ?? 'particulier'}</span>
         </p>
       </div>
@@ -67,11 +69,11 @@ export function OverviewView() {
             <Award className="h-8 w-8 text-primary" />
             <div>
               <div className="font-semibold flex items-center gap-2">
-                Dealer Certifié
-                <Badge className="bg-primary text-primary-foreground">Actif</Badge>
+                {t('dashboard.overview.certifiedTitle')}
+                <Badge className="bg-primary text-primary-foreground">{t('dashboard.overview.certifiedActive')}</Badge>
               </div>
               <div className="text-xs text-muted-foreground">
-                Vous avez vérifié {stats.monthCount} IMEI ce mois-ci (seuil 20). Ce badge est public.
+                {t('dashboard.overview.certifiedDesc', { count: stats.monthCount })}
               </div>
             </div>
           </CardContent>
@@ -79,20 +81,23 @@ export function OverviewView() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={TrendingUp} label="Vérifications ce mois" value={loading ? '…' : stats.monthCount} />
-        <StatCard icon={History} label="Total vérifications" value={loading ? '…' : stats.totalCount} />
-        <StatCard icon={Smartphone} label="Mes déclarations" value={loading ? '…' : stats.declarationCount} />
-        <StatCard icon={ShieldCheck} label="IMEI signalés volés" value={loading ? '…' : stats.stolenHits} accent />
+        <StatCard icon={TrendingUp} label={t('dashboard.overview.monthVerifs')} value={loading ? '…' : stats.monthCount} />
+        <StatCard icon={History} label={t('dashboard.overview.totalVerifs')} value={loading ? '…' : stats.totalCount} />
+        <StatCard icon={Smartphone} label={t('dashboard.overview.myDeclarations')} value={loading ? '…' : stats.declarationCount} />
+        <StatCard icon={ShieldCheck} label={t('dashboard.overview.stolenHits')} value={loading ? '…' : stats.stolenHits} accent />
       </div>
 
       {isPro && !certified && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Progression badge Dealer Certifié</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.overview.progressTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground mb-2">
-              {stats.monthCount} / 20 vérifications ce mois — encore {Math.max(0, 20 - stats.monthCount)} pour décrocher le badge.
+              {t('dashboard.overview.progressDesc', {
+                count: stats.monthCount,
+                remaining: Math.max(0, 20 - stats.monthCount),
+              })}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div

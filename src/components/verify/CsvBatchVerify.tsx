@@ -9,21 +9,28 @@ import { useToast } from "@/hooks/use-toast";
 import { sanitizeImei } from "@/lib/luhn";
 import { verifyImei, type VerificationResult } from "@/lib/verify-api";
 import { cacheResult } from "@/lib/imei-cache";
+import { useTranslation } from "react-i18next";
 
 const MAX_BATCH = 50;
 
-const STATUS_LABELS: Record<VerificationResult["status"], { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  legitimate: { label: "LÉGITIME", variant: "default" },
-  suspect: { label: "SUSPECT", variant: "secondary" },
-  stolen: { label: "VOLÉ", variant: "destructive" },
+const STATUS_VARIANT: Record<VerificationResult["status"], "default" | "secondary" | "destructive" | "outline"> = {
+  legitimate: "default",
+  suspect: "secondary",
+  stolen: "destructive",
 };
 
 export function CsvBatchVerify() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [results, setResults] = useState<VerificationResult[]>([]);
   const [progress, setProgress] = useState(0);
   const [running, setRunning] = useState(false);
+
+  const statusLabel = (s: VerificationResult["status"]) =>
+    s === "legitimate" ? t("verify.status.legitimate")
+    : s === "suspect" ? t("verify.status.suspect")
+    : t("verify.status.stolenShort");
 
   async function handleFile(file: File) {
     const text = await file.text();
@@ -34,16 +41,16 @@ export function CsvBatchVerify() {
 
     if (lines.length === 0) {
       toast({
-        title: "CSV invalide",
-        description: "Aucun IMEI à 15 chiffres trouvé dans le fichier.",
+        title: t("verify.batch.invalidTitle"),
+        description: t("verify.batch.invalidDesc"),
         variant: "destructive",
       });
       return;
     }
     if (lines.length > MAX_BATCH) {
       toast({
-        title: "Limite dépassée",
-        description: `Maximum ${MAX_BATCH} IMEI par lot — seuls les ${MAX_BATCH} premiers seront traités.`,
+        title: t("verify.batch.limitTitle"),
+        description: t("verify.batch.limitDesc", { max: MAX_BATCH }),
       });
     }
 
@@ -66,8 +73,8 @@ export function CsvBatchVerify() {
     }
     setRunning(false);
     toast({
-      title: "Lot terminé",
-      description: `${acc.length} IMEI vérifiés avec succès.`,
+      title: t("verify.batch.doneTitle"),
+      description: t("verify.batch.doneDesc", { count: acc.length }),
     });
   }
 
@@ -99,9 +106,9 @@ export function CsvBatchVerify() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Vérification par lot (CSV)</CardTitle>
+        <CardTitle className="text-lg">{t("verify.batch.title")}</CardTitle>
         <CardDescription>
-          Importez un fichier CSV contenant un IMEI par ligne — maximum {MAX_BATCH} entrées.
+          {t("verify.batch.description", { max: MAX_BATCH })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -123,7 +130,7 @@ export function CsvBatchVerify() {
             variant="outline"
           >
             {running ? <Loader2 className="animate-spin" /> : <Upload />}
-            Importer CSV
+            {t("verify.batch.import")}
           </Button>
           <Button
             onClick={downloadCsv}
@@ -131,7 +138,7 @@ export function CsvBatchVerify() {
             variant="secondary"
           >
             <Download />
-            Exporter résultats ({results.length})
+            {t("verify.batch.exportResults", { count: results.length })}
           </Button>
         </div>
 
@@ -142,28 +149,25 @@ export function CsvBatchVerify() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>IMEI</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Score</TableHead>
-                  <TableHead className="text-right">Temps</TableHead>
+                  <TableHead>{t("verify.batch.tableImei")}</TableHead>
+                  <TableHead>{t("verify.batch.tableStatus")}</TableHead>
+                  <TableHead className="text-right">{t("verify.batch.tableScore")}</TableHead>
+                  <TableHead className="text-right">{t("verify.batch.tableTime")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.map((r) => {
-                  const meta = STATUS_LABELS[r.status];
-                  return (
-                    <TableRow key={r.imei}>
-                      <TableCell className="font-mono text-xs">{r.imei}</TableCell>
-                      <TableCell>
-                        <Badge variant={meta.variant}>{meta.label}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">{r.score.toFixed(2)}</TableCell>
-                      <TableCell className="text-right font-mono text-muted-foreground">
-                        {r.responseTimeMs} ms
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {results.map((r) => (
+                  <TableRow key={r.imei}>
+                    <TableCell className="font-mono text-xs">{r.imei}</TableCell>
+                    <TableCell>
+                      <Badge variant={STATUS_VARIANT[r.status]}>{statusLabel(r.status)}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono">{r.score.toFixed(2)}</TableCell>
+                    <TableCell className="text-right font-mono text-muted-foreground">
+                      {r.responseTimeMs} ms
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
