@@ -15,6 +15,7 @@ import Verify from "./pages/Verify.tsx";
 import Declare from "./pages/Declare.tsx";
 import MapPage from "./pages/MapPage.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Privacy from "./pages/Privacy.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/declare" element={<Declare />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/dashboard/*" element={<Dashboard />} />
+                <Route path="/privacy" element={<Privacy />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
