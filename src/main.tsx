@@ -30,7 +30,6 @@ if (shouldDisableSW && "serviceWorker" in navigator) {
   });
 } else if ("serviceWorker" in navigator && import.meta.env.PROD) {
   // En production hors iframe, on enregistre le SW généré par vite-plugin-pwa
-  // @ts-expect-error - module virtuel injecté par vite-plugin-pwa au build
   import("virtual:pwa-register").then(({ registerSW }) => {
     registerSW({ immediate: true });
   });
