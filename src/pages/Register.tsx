@@ -36,7 +36,7 @@ export default function Register() {
     if (!parsed.success) {
       toast({
         title: 'Validation',
-        description: parsed.error.errors[0].message,
+        description: parsed.error.issues[0]?.message ?? 'Données invalides',
         variant: 'destructive',
       });
       return;
