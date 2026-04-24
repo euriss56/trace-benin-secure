@@ -15,9 +15,11 @@ import { recordVerification } from "@/lib/verification-history";
 import { ResultDialog } from "@/components/verify/ResultDialog";
 import { CsvBatchVerify } from "@/components/verify/CsvBatchVerify";
 import { cn } from "@/lib/utils";
+import { Trans, useTranslation } from "react-i18next";
 
 export default function Verify() {
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
   const online = useOnlineStatus();
   const [imei, setImei] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,6 @@ export default function Verify() {
   const isComplete = imei.length === 15;
   const luhnOk = useMemo(() => (isComplete ? isValidLuhn(imei) : null), [imei, isComplete]);
 
-  // Si on tape un IMEI déjà connu, on précharge le cache pour proposer un résultat hors-ligne instantané.
   useEffect(() => {
     if (!isComplete) return;
     let cancelled = false;
@@ -57,8 +58,8 @@ export default function Verify() {
           setOpen(true);
         } else {
           toast({
-            title: "Hors-ligne",
-            description: "Aucun résultat en cache pour cet IMEI. Reconnectez-vous pour vérifier.",
+            title: t("verify.offlineToastTitle"),
+            description: t("verify.offlineToastDesc"),
             variant: "destructive",
           });
         }
@@ -74,8 +75,8 @@ export default function Verify() {
     } catch (err) {
       console.error(err);
       toast({
-        title: "Erreur",
-        description: "La vérification a échoué. Réessayez.",
+        title: t("verify.errorToastTitle"),
+        description: t("verify.errorToastDesc"),
         variant: "destructive",
       });
     } finally {
@@ -83,7 +84,6 @@ export default function Verify() {
     }
   }
 
-  // Bordure dynamique : neutre / vert si Luhn OK / rouge si KO
   const borderState = !isComplete
     ? "border-input focus-visible:ring-ring"
     : luhnOk
@@ -93,53 +93,49 @@ export default function Verify() {
   return (
     <>
       <Helmet>
-        <title>Vérifier un IMEI — TraceIMEI-BJ</title>
-        <meta
-          name="description"
-          content="Vérifiez en moins de 2 secondes la légitimité d'un téléphone via son IMEI : validation Luhn, score ML, signalements."
-        />
+        <title>{t("verify.metaTitle")}</title>
+        <meta name="description" content={t("verify.metaDescription")} />
         <link rel="canonical" href="/verify" />
       </Helmet>
 
       <main className="container max-w-3xl py-10 space-y-6">
         <header className="space-y-2">
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Vérification IMEI
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" /> {t("verify.badge")}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Vérifiez un téléphone <span className="text-gradient-primary">en moins de 2 secondes</span>
+            {t("verify.titlePrefix")} <span className="text-gradient-primary">{t("verify.titleHighlight")}</span>
           </h1>
-          <p className="text-muted-foreground">
-            Saisissez les 15 chiffres de l'IMEI. La validation Luhn est exécutée en temps réel pendant la frappe.
-          </p>
+          <p className="text-muted-foreground">{t("verify.subtitle")}</p>
         </header>
 
         {!online && (
           <Alert variant="destructive">
             <WifiOff className="h-4 w-4" />
-            <AlertTitle>Mode hors-ligne</AlertTitle>
-            <AlertDescription>
-              Vous êtes déconnecté du réseau. Seuls les 50 derniers IMEI vérifiés sont accessibles depuis le cache local.
-            </AlertDescription>
+            <AlertTitle>{t("verify.offlineTitle")}</AlertTitle>
+            <AlertDescription>{t("verify.offlineDesc")}</AlertDescription>
           </Alert>
         )}
 
         <Card>
           <CardHeader>
-            <CardTitle>Vérification individuelle</CardTitle>
+            <CardTitle>{t("verify.individualTitle")}</CardTitle>
             <CardDescription>
-              Trouvez votre IMEI en composant <span className="font-mono font-semibold">*#06#</span> sur le téléphone.
+              <Trans
+                i18nKey="verify.individualDesc"
+                components={{ strong: <span className="font-mono font-semibold" /> }}
+              />
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="imei">Numéro IMEI (15 chiffres)</Label>
+                <Label htmlFor="imei">{t("verify.imeiLabel")}</Label>
                 <Input
                   id="imei"
                   inputMode="numeric"
                   autoComplete="off"
-                  placeholder="123456789012345"
+                  placeholder={t("verify.imeiPlaceholder")}
                   value={imei}
                   onChange={(e) => setImei(sanitizeImei(e.target.value))}
                   maxLength={15}
@@ -157,7 +153,7 @@ export default function Verify() {
                       )}
                     >
                       {luhnOk ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                      {luhnOk ? "Format Luhn valide" : "Format Luhn invalide"}
+                      {luhnOk ? t("verify.luhnValid") : t("verify.luhnInvalid")}
                     </span>
                   )}
                 </div>
@@ -170,16 +166,19 @@ export default function Verify() {
                 disabled={!isComplete || !luhnOk || loading}
               >
                 {loading ? <Loader2 className="animate-spin" /> : <Search />}
-                Vérifier cet IMEI
+                {t("verify.verifyButton")}
               </Button>
 
               {result && fromCache && !online && (
                 <Alert>
                   <WifiOff className="h-4 w-4" />
-                  <AlertTitle>Résultat en cache</AlertTitle>
+                  <AlertTitle>{t("verify.cachedTitle")}</AlertTitle>
                   <AlertDescription>
-                    Mode hors-ligne — résultat du{" "}
-                    <strong>{new Date(result.checkedAt).toLocaleString("fr-FR")}</strong>.
+                    <Trans
+                      i18nKey="verify.cachedDesc"
+                      values={{ date: new Date(result.checkedAt).toLocaleString(i18n.language) }}
+                      components={{ strong: <strong /> }}
+                    />
                   </AlertDescription>
                 </Alert>
               )}

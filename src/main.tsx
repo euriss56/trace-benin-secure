@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import "./i18n";
 
 // === Garde anti-iframe / preview Lovable pour le service worker PWA ===
 // Le SW ne doit s'enregistrer QUE sur le site publié (jamais dans le preview Lovable),

@@ -7,8 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -16,11 +18,9 @@ export default function ResetPassword() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Supabase places recovery info in the URL hash and triggers PASSWORD_RECOVERY event
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true);
     });
-    // Also accept if we already have a session
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
@@ -30,21 +30,21 @@ export default function ResetPassword() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      toast({ title: 'Mot de passe trop court', description: 'Au moins 8 caractères.', variant: 'destructive' });
+      toast({ title: t('auth.passwordTooShort'), description: t('auth.passwordTooShortDesc'), variant: 'destructive' });
       return;
     }
     if (password !== confirm) {
-      toast({ title: 'Les mots de passe ne correspondent pas', variant: 'destructive' });
+      toast({ title: t('auth.passwordMismatch'), variant: 'destructive' });
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Mot de passe mis à jour' });
+    toast({ title: t('auth.passwordUpdated') });
     navigate('/');
   };
 
@@ -55,18 +55,18 @@ export default function ResetPassword() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Shield className="h-6 w-6" />
           </div>
-          <CardTitle>Réinitialiser le mot de passe</CardTitle>
-          <CardDescription>Choisissez un nouveau mot de passe</CardDescription>
+          <CardTitle>{t('auth.resetTitle')}</CardTitle>
+          <CardDescription>{t('auth.resetDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           {!ready ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              Lien invalide ou expiré. Demandez un nouveau lien depuis la page de connexion.
+              {t('auth.resetInvalid')}
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Nouveau mot de passe</Label>
+                <Label htmlFor="password">{t('auth.newPassword')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -77,7 +77,7 @@ export default function ResetPassword() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm">Confirmer</Label>
+                <Label htmlFor="confirm">{t('auth.confirm')}</Label>
                 <Input
                   id="confirm"
                   type="password"
@@ -88,7 +88,7 @@ export default function ResetPassword() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Mise à jour…' : 'Mettre à jour'}
+                {loading ? t('auth.resetLoading') : t('auth.resetSubmit')}
               </Button>
             </form>
           )}

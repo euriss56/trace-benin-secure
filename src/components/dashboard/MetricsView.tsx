@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Activity } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
 
 interface Globals {
   totalUsers: number;
@@ -16,6 +17,7 @@ interface Globals {
 const ML_TARGET = 0.85;
 
 export function MetricsView() {
+  const { t } = useTranslation();
   const [g, setG] = useState<Globals>({
     totalUsers: 0, totalVerifs: 0, totalDecls: 0,
     stolenCount: 0, suspectCount: 0, legitimateCount: 0,
@@ -44,8 +46,6 @@ export function MetricsView() {
     });
   }, []);
 
-  // AUC-ROC simulé : on n'a pas les vraies labels, on calcule un proxy basé sur la cohérence
-  // (à remplacer par la vraie métrique quand l'API ML l'expose).
   const total = Math.max(1, g.totalVerifs);
   const aucProxy = total > 0
     ? 0.78 + 0.18 * (g.stolenCount / total) + 0.04 * Math.min(1, total / 100)
@@ -56,29 +56,27 @@ export function MetricsView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Métriques globales</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Statistiques de toute la plateforme et performance du modèle ML.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.metrics.title')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">{t('dashboard.metrics.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Stat label="Utilisateurs" value={loading ? '…' : g.totalUsers} />
-        <Stat label="Vérifications" value={loading ? '…' : g.totalVerifs} />
-        <Stat label="Déclarations" value={loading ? '…' : g.totalDecls} />
+        <Stat label={t('dashboard.metrics.users')} value={loading ? '…' : g.totalUsers} />
+        <Stat label={t('dashboard.metrics.verifications')} value={loading ? '…' : g.totalVerifs} />
+        <Stat label={t('dashboard.metrics.declarations')} value={loading ? '…' : g.totalDecls} />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
-            Performance ML
+            {t('dashboard.metrics.mlTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="flex items-center justify-between text-sm mb-1">
-              <span>AUC-ROC (estimation)</span>
+              <span>{t('dashboard.metrics.auc')}</span>
               <span className="tabular-nums font-semibold">{aucClamped.toFixed(3)}</span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -87,23 +85,25 @@ export function MetricsView() {
                 style={{ width: `${aucClamped * 100}%` }}
               />
             </div>
-            <div className="text-xs text-muted-foreground mt-1">Cible : ≥ {ML_TARGET}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {t('dashboard.metrics.target', { value: ML_TARGET })}
+            </div>
           </div>
 
           {belowTarget && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Performance sous le seuil</AlertTitle>
+              <AlertTitle>{t('dashboard.metrics.belowTitle')}</AlertTitle>
               <AlertDescription>
-                L'AUC-ROC estimé est inférieur à {ML_TARGET}. Envisagez un ré-entraînement du modèle.
+                {t('dashboard.metrics.belowDesc', { value: ML_TARGET })}
               </AlertDescription>
             </Alert>
           )}
 
           <div className="grid grid-cols-3 gap-3 pt-2">
-            <Mini label="Légitime" value={g.legitimateCount} color="bg-success" />
-            <Mini label="Suspect" value={g.suspectCount} color="bg-warning" />
-            <Mini label="Volé" value={g.stolenCount} color="bg-destructive" />
+            <Mini label={t('dashboard.metrics.legitimate')} value={g.legitimateCount} color="bg-success" />
+            <Mini label={t('dashboard.metrics.suspect')} value={g.suspectCount} color="bg-warning" />
+            <Mini label={t('dashboard.metrics.stolen')} value={g.stolenCount} color="bg-destructive" />
           </div>
         </CardContent>
       </Card>

@@ -11,26 +11,28 @@ import {
 } from 'lucide-react';
 import { useAuth, type AppRole } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface NavItem {
   to: string;
-  label: string;
+  labelKey: string;
   icon: typeof LayoutDashboard;
   roles?: AppRole[];
 }
 
 const NAV: NavItem[] = [
-  { to: '/dashboard', label: 'Vue d\'ensemble', icon: LayoutDashboard },
-  { to: '/dashboard/history', label: 'Mes vérifications', icon: History, roles: ['particulier', 'dealer', 'technicien'] },
-  { to: '/dashboard/declarations', label: 'Mes déclarations', icon: Smartphone, roles: ['particulier', 'dealer', 'technicien'] },
-  { to: '/dashboard/cases', label: 'Signalements', icon: ShieldCheck, roles: ['enqueteur', 'admin'] },
-  { to: '/dashboard/map', label: 'Carte', icon: MapIcon, roles: ['enqueteur', 'admin'] },
-  { to: '/dashboard/users', label: 'Utilisateurs', icon: Users, roles: ['admin'] },
-  { to: '/dashboard/metrics', label: 'Métriques ML', icon: BarChart3, roles: ['admin'] },
+  { to: '/dashboard', labelKey: 'dashboard.nav.overview', icon: LayoutDashboard },
+  { to: '/dashboard/history', labelKey: 'dashboard.nav.history', icon: History, roles: ['particulier', 'dealer', 'technicien'] },
+  { to: '/dashboard/declarations', labelKey: 'dashboard.nav.declarations', icon: Smartphone, roles: ['particulier', 'dealer', 'technicien'] },
+  { to: '/dashboard/cases', labelKey: 'dashboard.nav.cases', icon: ShieldCheck, roles: ['enqueteur', 'admin'] },
+  { to: '/dashboard/map', labelKey: 'dashboard.nav.map', icon: MapIcon, roles: ['enqueteur', 'admin'] },
+  { to: '/dashboard/users', labelKey: 'dashboard.nav.users', icon: Users, roles: ['admin'] },
+  { to: '/dashboard/metrics', labelKey: 'dashboard.nav.metrics', icon: BarChart3, roles: ['admin'] },
 ];
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { role } = useAuth();
+  const { t } = useTranslation();
   const items = NAV.filter((i) => !i.roles || (role && i.roles.includes(role)));
 
   return (
@@ -55,7 +57,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
                   }
                 >
                   <Icon className="h-4 w-4" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </NavLink>
               );
             })}

@@ -15,61 +15,37 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
-const stats = [
-  { value: '10.9M', label: 'Abonnés mobiles', sub: '(ARCEP 2025)' },
-  { value: 'Luhn', label: 'Validation IMEI standard' },
-  { value: '< 2s', label: 'Temps de réponse moyen' },
-  { value: 'Open', label: 'Modèle apprenant en continu' },
-];
-
-const steps = [
-  {
-    icon: Smartphone,
-    label: 'ÉTAPE 1',
-    title: 'Saisissez l\'IMEI',
-    desc: 'Composez *#06# sur le téléphone pour obtenir le numéro IMEI à 15 chiffres.',
-  },
-  {
-    icon: Search,
-    label: 'ÉTAPE 2',
-    title: 'Analyse transparente',
-    desc: 'Validation Luhn, lookup TAC, croisement avec les signalements de vol — chaque règle est expliquée.',
-  },
-  {
-    icon: CheckCircle2,
-    label: 'ÉTAPE 3',
-    title: 'Résultat instantané',
-    desc: 'Statut tricolore (vert/orange/rouge) avec score 0–100 et explications détaillées.',
-  },
-];
-
-const actors = [
-  {
-    icon: Store,
-    title: 'Dealer / Revendeur',
-    desc: 'Vérifiez l\'historique d\'un téléphone en 2 secondes avant l\'achat. Évitez les appareils volés.',
-  },
-  {
-    icon: Wrench,
-    title: 'Atelier de réparation',
-    desc: 'Détectez les téléphones suspects avant intervention. Protégez votre business et vos clients.',
-  },
-  {
-    icon: Scale,
-    title: 'Forces de l\'ordre',
-    desc: 'Accès enquêteur dédié pour consulter les signalements et coordonner les enquêtes.',
-  },
-];
-
-const features = [
-  { icon: Lock, title: 'Données chiffrées', desc: 'Authentification sécurisée et stockage chiffré.' },
-  { icon: Brain, title: 'Score ML', desc: 'Algorithme apprenant en continu.' },
-  { icon: Database, title: 'Lookup TAC', desc: 'Identification précise du modèle.' },
-  { icon: MapPin, title: '100% Bénin', desc: 'Conçu pour le marché béninois.' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function Index() {
+  const { t } = useTranslation();
+
+  const stats = [
+    { value: '10.9M', label: t('home.stats.subscribers'), sub: t('home.stats.subscribersSub') },
+    { value: 'Luhn', label: t('home.stats.luhn') },
+    { value: '< 2s', label: t('home.stats.responseTime') },
+    { value: 'Open', label: t('home.stats.openModel') },
+  ];
+
+  const steps = [
+    { icon: Smartphone, label: t('home.how.step1Label'), title: t('home.how.step1Title'), desc: t('home.how.step1Desc') },
+    { icon: Search, label: t('home.how.step2Label'), title: t('home.how.step2Title'), desc: t('home.how.step2Desc') },
+    { icon: CheckCircle2, label: t('home.how.step3Label'), title: t('home.how.step3Title'), desc: t('home.how.step3Desc') },
+  ];
+
+  const actors = [
+    { icon: Store, title: t('home.actors.dealerTitle'), desc: t('home.actors.dealerDesc') },
+    { icon: Wrench, title: t('home.actors.repairTitle'), desc: t('home.actors.repairDesc') },
+    { icon: Scale, title: t('home.actors.policeTitle'), desc: t('home.actors.policeDesc') },
+  ];
+
+  const features = [
+    { icon: Lock, title: t('home.features.encryptedTitle'), desc: t('home.features.encryptedDesc') },
+    { icon: Brain, title: t('home.features.mlTitle'), desc: t('home.features.mlDesc') },
+    { icon: Database, title: t('home.features.tacTitle'), desc: t('home.features.tacDesc') },
+    { icon: MapPin, title: t('home.features.beninTitle'), desc: t('home.features.beninDesc') },
+  ];
+
   return (
     <div>
       {/* Hero */}
@@ -78,32 +54,30 @@ export default function Index() {
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-success/10 px-4 py-1.5 text-sm font-medium text-success">
               <Shield className="h-4 w-4" />
-              <span>Authentifier · Protéger · Tracer</span>
+              <span>{t('home.badge')}</span>
             </div>
 
             <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-              TraceIMEI-BJ —{' '}
-              <span className="text-gradient-primary">Protégez vos téléphones</span>
+              {t('home.titlePrefix')}{' '}
+              <span className="text-gradient-primary">{t('home.titleHighlight')}</span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-              La première plateforme ML pour traquer les téléphones volés au Bénin. Pour les
-              dealers, ateliers de réparation et forces de l'ordre.
+              {t('home.subtitle')}
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button asChild size="lg" className="bg-primary shadow-elegant hover:bg-primary/90">
                 <Link to="/verify">
-                  Vérifier un IMEI gratuitement
+                  {t('home.ctaVerify')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/register">Créer un compte</Link>
+                <Link to="/register">{t('home.ctaRegister')}</Link>
               </Button>
             </div>
 
-            {/* Stats */}
             <div className="mt-16 grid grid-cols-2 gap-6 md:grid-cols-4">
               {stats.map((s) => (
                 <div key={s.label} className="text-center">
@@ -124,10 +98,10 @@ export default function Index() {
         <div className="container">
           <div className="mb-12 text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Processus simple
+              {t('home.how.kicker')}
             </p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
-              Comment ça marche ?
+              {t('home.how.title')}
             </h2>
           </div>
 
@@ -155,10 +129,10 @@ export default function Index() {
         <div className="container">
           <div className="mb-12 text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Conçu pour vous
+              {t('home.actors.kicker')}
             </p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
-              Une plateforme pour chaque acteur
+              {t('home.actors.title')}
             </h2>
           </div>
 
@@ -183,7 +157,7 @@ export default function Index() {
         <div className="container">
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Pourquoi TraceIMEI-BJ ?
+              {t('home.features.title')}
             </h2>
           </div>
 
@@ -209,17 +183,17 @@ export default function Index() {
         <div className="container">
           <div className="mx-auto max-w-3xl rounded-3xl bg-primary p-12 text-center text-primary-foreground shadow-elegant">
             <p className="text-xs font-semibold uppercase tracking-widest opacity-80">
-              Rejoignez la communauté
+              {t('home.cta.kicker')}
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-              Prêt à sécuriser le marché du téléphone au Bénin ?
+              {t('home.cta.title')}
             </h2>
             <p className="mt-4 text-base opacity-90">
-              Inscription gratuite. Aucune carte bancaire requise.
+              {t('home.cta.subtitle')}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg" variant="secondary">
-                <Link to="/register">Créer mon compte</Link>
+                <Link to="/register">{t('home.cta.createAccount')}</Link>
               </Button>
               <Button
                 asChild
@@ -228,7 +202,7 @@ export default function Index() {
                 className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
               >
                 <Link to="/verify">
-                  Essayer maintenant
+                  {t('home.cta.tryNow')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

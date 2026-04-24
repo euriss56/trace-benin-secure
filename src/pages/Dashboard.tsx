@@ -9,9 +9,11 @@ import { CasesView } from '@/components/dashboard/CasesView';
 import { UsersView } from '@/components/dashboard/UsersView';
 import { MetricsView } from '@/components/dashboard/MetricsView';
 import MapPage from './MapPage';
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
   const { user, role, loading } = useAuth();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -25,8 +27,8 @@ export default function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>Tableau de bord — TraceIMEI-BJ</title>
-        <meta name="description" content="Votre tableau de bord TraceIMEI-BJ : vérifications, déclarations et statistiques selon votre rôle." />
+        <title>{t('dashboard.metaTitle')}</title>
+        <meta name="description" content={t('dashboard.metaDescription')} />
       </Helmet>
       <DashboardLayout>
         <Routes>
