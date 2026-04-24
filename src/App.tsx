@@ -12,6 +12,7 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import Verify from "./pages/Verify.tsx";
+import Declare from "./pages/Declare.tsx";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/verify" element={<Verify />} />
+                <Route path="/declare" element={<Declare />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
