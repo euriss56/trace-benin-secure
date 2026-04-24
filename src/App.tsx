@@ -14,6 +14,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import Verify from "./pages/Verify.tsx";
 import Declare from "./pages/Declare.tsx";
 import MapPage from "./pages/MapPage.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
                 <Route path="/verify" element={<Verify />} />
                 <Route path="/declare" element={<Declare />} />
                 <Route path="/map" element={<MapPage />} />
+                <Route path="/dashboard/*" element={<Dashboard />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
