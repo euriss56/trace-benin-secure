@@ -1,25 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.warn(
-    '[supabase] VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquants. ' +
-      "Ajoutez-les dans les variables d'environnement (Lovable + Vercel)."
+// Diagnostic log (visible in browser console on Vercel)
+console.log('[supabase] URL:', supabaseUrl);
+console.log('[supabase] Anon key present:', Boolean(supabaseAnonKey));
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Variables Supabase manquantes : VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY ' +
+      "doivent être définies dans les variables d'environnement (Vercel → Settings → Environment Variables)."
   );
 }
 
-export const supabase = createClient(
-  SUPABASE_URL ?? 'https://placeholder.supabase.co',
-  SUPABASE_ANON_KEY ?? 'public-anon-placeholder',
-  {
-    auth: {
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  }
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
-export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+export const isSupabaseConfigured = true;
