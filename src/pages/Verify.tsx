@@ -11,6 +11,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { isValidLuhn, sanitizeImei } from "@/lib/luhn";
 import { verifyImei, type VerificationResult } from "@/lib/verify-api";
 import { cacheResult, getCachedResult } from "@/lib/imei-cache";
+import { recordVerification } from "@/lib/verification-history";
 import { ResultDialog } from "@/components/verify/ResultDialog";
 import { CsvBatchVerify } from "@/components/verify/CsvBatchVerify";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,7 @@ export default function Verify() {
 
       const r = await verifyImei(imei);
       await cacheResult(r);
+      recordVerification(r).catch(() => { /* silencieux */ });
       setResult(r);
       setFromCache(false);
       setOpen(true);
