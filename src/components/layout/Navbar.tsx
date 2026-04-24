@@ -58,6 +58,11 @@ export function Navbar() {
             <NavLink to="/verify" className={linkClass}>
               Vérifier IMEI
             </NavLink>
+            {user && (
+              <NavLink to="/declare" className={linkClass}>
+                Déclarer un vol
+              </NavLink>
+            )}
             {canSeeMap && (
               <NavLink to="/map" className={linkClass}>
                 Carte
