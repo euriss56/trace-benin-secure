@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Activity, AlertTriangle, CheckCircle2, Cpu, ShieldAlert, Smartphone, Timer, WifiOff } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, Cpu, ListChecks, ShieldAlert, Smartphone, Timer, WifiOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { checkIMEI, getMlAvailability, subscribeMlStatus, type MlResult } from "@/services/mlService";
+import { checkIMEI, getMlAvailability, subscribeMlStatus, type MlResult, type Heuristic } from "@/services/mlService";
 import { cn } from "@/lib/utils";
 
 interface MlScoreCardProps {
