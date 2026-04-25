@@ -90,7 +90,9 @@ export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
 }
 
 function ScoreDisplay({ result }: { result: MlResult }) {
-  const pct = Math.round(result.score * 100);
+  // Score garanti dans [0,1] (clamp défensif côté UI)
+  const safeScore = Math.max(0, Math.min(1, Number.isFinite(result.score) ? result.score : 0.5));
+  const pct = Math.round(safeScore * 100);
   // Couleurs : 0-50% vert, 50-80% orange, 80-100% rouge
   const color =
     pct < 50 ? "bg-success" : pct < 80 ? "bg-warning" : "bg-destructive";
@@ -107,6 +109,9 @@ function ScoreDisplay({ result }: { result: MlResult }) {
     : result.status === "suspect" ? "Suspect"
     : "Volé";
 
+  const heuristics = (result.details?.heuristics as Heuristic[] | undefined) ?? [];
+  const isFallback = result.source === "fallback";
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -114,7 +119,7 @@ function ScoreDisplay({ result }: { result: MlResult }) {
         <div>
           <div className={cn("text-xl font-bold", textColor)}>{statusLabel}</div>
           <div className="text-xs text-muted-foreground">
-            Score de risque : <span className="font-mono font-semibold">{result.score.toFixed(2)}</span> / 1.00
+            Score de risque : <span className="font-mono font-semibold">{safeScore.toFixed(2)}</span> / 1.00
           </div>
         </div>
       </div>
@@ -154,6 +159,83 @@ function ScoreDisplay({ result }: { result: MlResult }) {
             Source : {result.source === "api" ? "API ML" : "fallback local"}
           </div>
         </div>
+      </div>
+
+      {isFallback && heuristics.length > 0 && (
+        <HeuristicsPanel heuristics={heuristics} />
+      )}
+    </div>
+  );
+}
+
+function HeuristicsPanel({ heuristics }: { heuristics: Heuristic[] }) {
+  const triggered = heuristics.filter((h) => h.triggered);
+  const ok = heuristics.filter((h) => !h.triggered);
+
+  return (
+    <div className="rounded-md border bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <ListChecks className="h-4 w-4 text-primary" />
+        Heuristiques appliquées (mode dégradé)
+      </div>
+      <p className="text-xs text-muted-foreground -mt-1">
+        Score calculé localement. La valeur retenue est le poids le plus élevé
+        parmi les règles déclenchées (baseline 0.10), garantie entre 0.00 et 1.00.
+      </p>
+
+      {triggered.length > 0 ? (
+        <div className="space-y-1.5">
+          <div className="text-[11px] uppercase tracking-wide text-destructive font-semibold">
+            Règles déclenchées ({triggered.length})
+          </div>
+          {triggered.map((h) => (
+            <HeuristicRow key={h.id} h={h} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-xs text-success font-medium flex items-center gap-1.5">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          Aucune anomalie locale détectée
+        </div>
+      )}
+
+      {ok.length > 0 && (
+        <details className="group">
+          <summary className="cursor-pointer text-[11px] uppercase tracking-wide text-muted-foreground font-semibold hover:text-foreground transition-colors">
+            Règles vérifiées et conformes ({ok.length})
+          </summary>
+          <div className="mt-2 space-y-1.5">
+            {ok.map((h) => (
+              <HeuristicRow key={h.id} h={h} />
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function HeuristicRow({ h }: { h: Heuristic }) {
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-2 rounded-sm px-2 py-1.5 text-xs",
+        h.triggered ? "bg-destructive/5 border border-destructive/20" : "bg-card border"
+      )}
+    >
+      {h.triggered ? (
+        <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
+      ) : (
+        <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium">{h.label}</span>
+          <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+            poids {h.weight.toFixed(2)}
+          </span>
+        </div>
+        <div className="text-muted-foreground mt-0.5 leading-snug">{h.description}</div>
       </div>
     </div>
   );
