@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
-import { Shield, LogOut, Map as MapIcon, LayoutDashboard, Moon, Sun, Languages } from 'lucide-react';
+import { Shield, LogOut, Map as MapIcon, LayoutDashboard, Moon, Sun, Languages, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -82,6 +82,12 @@ export function Navbar() {
                 {t('nav.map')}
               </NavLink>
             )}
+            <NavLink to="/contacts-police" className={linkClass}>
+              <span className="flex items-center gap-1">
+                <Phone className="h-3.5 w-3.5" />
+                Contacts Police
+              </span>
+            </NavLink>
             <NavLink to="/privacy" className={linkClass}>
               {t('nav.privacy')}
             </NavLink>
@@ -168,7 +174,10 @@ export function Navbar() {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                  <DropdownMenuItem
+                    onClick={signOut}
+                    className="text-destructive focus:text-destructive"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     {t('nav.logout')}
                   </DropdownMenuItem>
