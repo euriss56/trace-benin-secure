@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, Activity } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, Activity, Users, Search, FileWarning, Target } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { MlMetricsWidget } from './MlMetricsWidget';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 interface Globals {
   totalUsers: number;
@@ -56,70 +58,143 @@ export function MetricsView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.metrics.title')}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t('dashboard.metrics.subtitle')}</p>
-      </div>
+      <header className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.metrics.title')}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{t('dashboard.metrics.subtitle')}</p>
+        </div>
+        <Badge variant="outline" className="gap-1.5">
+          <Activity className="h-3 w-3" />
+          Données temps réel
+        </Badge>
+      </header>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Stat label={t('dashboard.metrics.users')} value={loading ? '…' : g.totalUsers} />
-        <Stat label={t('dashboard.metrics.verifications')} value={loading ? '…' : g.totalVerifs} />
-        <Stat label={t('dashboard.metrics.declarations')} value={loading ? '…' : g.totalDecls} />
-      </div>
+      {/* KPIs principaux */}
+      <section>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          Activité globale
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Kpi
+            icon={Users}
+            label={t('dashboard.metrics.users')}
+            value={loading ? '…' : g.totalUsers.toLocaleString('fr-FR')}
+            tone="primary"
+          />
+          <Kpi
+            icon={Search}
+            label={t('dashboard.metrics.verifications')}
+            value={loading ? '…' : g.totalVerifs.toLocaleString('fr-FR')}
+            tone="success"
+          />
+          <Kpi
+            icon={FileWarning}
+            label={t('dashboard.metrics.declarations')}
+            value={loading ? '…' : g.totalDecls.toLocaleString('fr-FR')}
+            tone="warning"
+          />
+        </div>
+      </section>
 
-      <MlMetricsWidget />
+      {/* Module ML — composant dédié */}
+      <section>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          Détection IA
+        </h2>
+        <MlMetricsWidget />
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" />
-            {t('dashboard.metrics.mlTitle')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span>{t('dashboard.metrics.auc')}</span>
-              <span className="tabular-nums font-semibold">{aucClamped.toFixed(3)}</span>
+      {/* Performance modèle */}
+      <section>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          Performance du modèle
+        </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                {t('dashboard.metrics.mlTitle')}
+              </span>
+              <Badge
+                variant={belowTarget ? 'destructive' : 'default'}
+                className={cn(!belowTarget && 'bg-success text-success-foreground')}
+              >
+                {belowTarget ? 'Sous l\'objectif' : 'Conforme'}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between text-sm mb-1.5">
+                <span className="font-medium">{t('dashboard.metrics.auc')}</span>
+                <span className="tabular-nums font-bold text-lg">{aucClamped.toFixed(3)}</span>
+              </div>
+              <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={`h-full transition-all duration-500 ${belowTarget ? 'bg-destructive' : 'bg-success'}`}
+                  style={{ width: `${aucClamped * 100}%` }}
+                />
+                {/* Marqueur de cible */}
+                <div
+                  className="absolute top-0 h-full w-0.5 bg-foreground/40"
+                  style={{ left: `${ML_TARGET * 100}%` }}
+                  aria-label={`Objectif ${ML_TARGET}`}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                <span>0.50</span>
+                <span className="font-medium">↑ Cible {ML_TARGET}</span>
+                <span>1.00</span>
+              </div>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className={`h-full transition-all ${belowTarget ? 'bg-destructive' : 'bg-success'}`}
-                style={{ width: `${aucClamped * 100}%` }}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {t('dashboard.metrics.target', { value: ML_TARGET })}
-            </div>
-          </div>
 
-          {belowTarget && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>{t('dashboard.metrics.belowTitle')}</AlertTitle>
-              <AlertDescription>
-                {t('dashboard.metrics.belowDesc', { value: ML_TARGET })}
-              </AlertDescription>
-            </Alert>
-          )}
+            {belowTarget && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>{t('dashboard.metrics.belowTitle')}</AlertTitle>
+                <AlertDescription>
+                  {t('dashboard.metrics.belowDesc', { value: ML_TARGET })}
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <Mini label={t('dashboard.metrics.legitimate')} value={g.legitimateCount} color="bg-success" />
-            <Mini label={t('dashboard.metrics.suspect')} value={g.suspectCount} color="bg-warning" />
-            <Mini label={t('dashboard.metrics.stolen')} value={g.stolenCount} color="bg-destructive" />
-          </div>
-        </CardContent>
-      </Card>
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              <Mini label={t('dashboard.metrics.legitimate')} value={g.legitimateCount} color="bg-success" />
+              <Mini label={t('dashboard.metrics.suspect')} value={g.suspectCount} color="bg-warning" />
+              <Mini label={t('dashboard.metrics.stolen')} value={g.stolenCount} color="bg-destructive" />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: number | string }) {
+function Kpi({
+  icon: Icon, label, value, tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  tone: 'primary' | 'success' | 'warning';
+}) {
+  const toneClass =
+    tone === 'success' ? 'text-success bg-success/10'
+    : tone === 'warning' ? 'text-warning bg-warning/10'
+    : 'text-primary bg-primary/10';
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="text-2xl font-bold tabular-nums">{value}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{label}</div>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-3xl font-bold tabular-nums">{value}</div>
+            <div className="mt-1 text-xs text-muted-foreground font-medium">{label}</div>
+          </div>
+          <div className={cn('rounded-lg p-2', toneClass)}>
+            <Icon className="h-4 w-4" />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -132,7 +207,7 @@ function Mini({ label, value, color }: { label: string; value: number; color: st
         <span className={`h-2 w-2 rounded-full ${color}`} />
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
-      <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
+      <div className="mt-1 text-lg font-semibold tabular-nums">{value.toLocaleString('fr-FR')}</div>
     </div>
   );
 }
