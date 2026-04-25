@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Activity } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
+import { MlMetricsWidget } from './MlMetricsWidget';
 import { useTranslation } from 'react-i18next';
 
 interface Globals {
@@ -65,6 +66,8 @@ export function MetricsView() {
         <Stat label={t('dashboard.metrics.verifications')} value={loading ? '…' : g.totalVerifs} />
         <Stat label={t('dashboard.metrics.declarations')} value={loading ? '…' : g.totalDecls} />
       </div>
+
+      <MlMetricsWidget />
 
       <Card>
         <CardHeader>

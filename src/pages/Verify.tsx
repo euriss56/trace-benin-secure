@@ -14,6 +14,7 @@ import { cacheResult, getCachedResult } from "@/lib/imei-cache";
 import { recordVerification } from "@/lib/verification-history";
 import { ResultDialog } from "@/components/verify/ResultDialog";
 import { CsvBatchVerify } from "@/components/verify/CsvBatchVerify";
+import { MlScoreCard } from "@/components/verify/MlScoreCard";
 import { cn } from "@/lib/utils";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -185,6 +186,8 @@ export default function Verify() {
             </form>
           </CardContent>
         </Card>
+
+        <MlScoreCard imei={imei} enabled={isComplete && !!luhnOk} />
 
         <CsvBatchVerify />
 
