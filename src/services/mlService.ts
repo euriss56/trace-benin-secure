@@ -190,7 +190,7 @@ export async function checkIMEI(imei: string, signal?: AbortSignal): Promise<MlR
   try {
     const data = await postJson<ApiCheckResponse>("/api/check-imei", { imei, features }, signal);
     setAvailable(true);
-    const score = typeof data.score === "number" ? data.score : 0.5;
+    const score = clampScore(typeof data.score === "number" ? data.score : 0.5);
     const status = (["legitime", "suspect", "vole"].includes(String(data.status))
       ? data.status
       : statusFromScore(score)) as MlStatus;
