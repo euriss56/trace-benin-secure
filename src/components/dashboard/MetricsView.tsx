@@ -67,6 +67,8 @@ export function MetricsView() {
         <Stat label={t('dashboard.metrics.declarations')} value={loading ? '…' : g.totalDecls} />
       </div>
 
+      <MlMetricsWidget />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
