@@ -224,7 +224,7 @@ export async function batchCheckIMEI(imeis: string[], signal?: AbortSignal): Pro
     return imeis.map((imei, idx) => {
       const r = data.results?.[idx];
       const tacInfo = lookupTac(imei.slice(0, 8));
-      const score = typeof r?.score === "number" ? r.score : 0.5;
+      const score = clampScore(typeof r?.score === "number" ? r.score : 0.5);
       const status = (r && ["legitime", "suspect", "vole"].includes(String(r.status))
         ? r.status
         : statusFromScore(score)) as MlStatus;
