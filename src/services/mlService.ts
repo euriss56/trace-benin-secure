@@ -57,52 +57,102 @@ function setAvailable(v: boolean) {
 }
 
 // === Fallback local ===
+function clampScore(n: number): number {
+  if (!Number.isFinite(n)) return 0.5;
+  return Math.max(0, Math.min(1, n));
+}
+
 function statusFromScore(score: number): MlStatus {
-  if (score >= 0.8) return "vole";
-  if (score >= 0.5) return "suspect";
+  const s = clampScore(score);
+  if (s >= 0.8) return "vole";
+  if (s >= 0.5) return "suspect";
   return "legitime";
 }
 
-function fallbackScore(features: ImeiFeatures): { score: number; reasons: string[] } {
-  const reasons: string[] = [];
-  let score = 0.1;
+export interface Heuristic {
+  id: string;
+  label: string;
+  triggered: boolean;
+  weight: number;          // contribution au score si déclenchée (0..1)
+  description: string;
+}
 
-  if (features.known_test_imei) {
-    score = Math.max(score, 0.99);
-    reasons.push("IMEI de test connu");
-  }
-  if (!features.luhn_valid) {
-    score = Math.max(score, 0.95);
-    reasons.push("Échec Luhn");
-  }
-  if (features.all_same_digits) {
-    score = Math.max(score, 0.9);
-    reasons.push("Chiffres tous identiques");
-  }
-  if (features.sequential_digits) {
-    score = Math.max(score, 0.85);
-    reasons.push("Chiffres séquentiels");
-  }
-  if (!features.imei_length_valid) {
-    score = Math.max(score, 0.8);
-    reasons.push("Longueur invalide");
-  }
-  if (reasons.length === 0) reasons.push("Aucune anomalie locale détectée");
+export function computeHeuristics(features: ImeiFeatures, tacKnown: boolean): Heuristic[] {
+  return [
+    {
+      id: "known_test_imei",
+      label: "IMEI de test connu",
+      triggered: features.known_test_imei,
+      weight: 0.99,
+      description: "Numéro figurant dans la liste publique des IMEI de test (000…, 123…).",
+    },
+    {
+      id: "luhn_invalid",
+      label: "Échec validation Luhn",
+      triggered: !features.luhn_valid,
+      weight: 0.95,
+      description: "Le chiffre de contrôle (15ᵉ chiffre) ne correspond pas à l'algorithme de Luhn.",
+    },
+    {
+      id: "all_same",
+      label: "Chiffres tous identiques",
+      triggered: features.all_same_digits,
+      weight: 0.90,
+      description: "Les 15 chiffres sont identiques (ex. 111111111111111) — typique d'un IMEI factice.",
+    },
+    {
+      id: "sequential",
+      label: "Chiffres séquentiels",
+      triggered: features.sequential_digits,
+      weight: 0.85,
+      description: "Suite croissante ou décroissante de chiffres consécutifs.",
+    },
+    {
+      id: "length",
+      label: "Longueur invalide",
+      triggered: !features.imei_length_valid,
+      weight: 0.80,
+      description: "Un IMEI valide doit contenir exactement 15 chiffres.",
+    },
+    {
+      id: "unknown_tac",
+      label: "TAC fabricant inconnu",
+      triggered: !tacKnown && features.imei_length_valid,
+      weight: 0.35,
+      description: "Le TAC (8 premiers chiffres) n'est pas répertorié dans notre base locale.",
+    },
+  ];
+}
 
-  return { score, reasons };
+function fallbackScore(features: ImeiFeatures, tacKnown: boolean): {
+  score: number;
+  heuristics: Heuristic[];
+} {
+  const heuristics = computeHeuristics(features, tacKnown);
+  // Score = max des poids déclenchés, baseline 0.10. Toujours clampé à [0,1].
+  let score = 0.10;
+  for (const h of heuristics) {
+    if (h.triggered && h.weight > score) score = h.weight;
+  }
+  return { score: clampScore(score), heuristics };
 }
 
 function fallbackResult(imei: string, started: number): MlResult {
   const features = computeImeiFeatures(imei);
   const tacInfo = lookupTac(features.tac_code);
-  const { score, reasons } = fallbackScore(features);
+  const { score, heuristics } = fallbackScore(features, tacInfo.known);
   return {
     imei,
-    score,
+    score: clampScore(score),
     status: statusFromScore(score),
     manufacturer: tacInfo.manufacturer,
     model_series: tacInfo.model_series,
-    details: { features, reasons, mode: "local-fallback" },
+    details: {
+      features,
+      heuristics,
+      triggered: heuristics.filter((h) => h.triggered).map((h) => h.id),
+      mode: "local-fallback",
+    },
     response_time_ms: Math.max(1, Date.now() - started),
     source: "fallback",
   };
