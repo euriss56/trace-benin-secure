@@ -55,7 +55,6 @@ export default function PoliceContacts() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* En-tête */}
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary">
           <Shield className="h-8 w-8 text-white" />
@@ -67,8 +66,6 @@ export default function PoliceContacts() {
           {contacts.length} commissariats référencés sur les 77 communes du Bénin
         </p>
       </div>
-
-      {/* Filtres */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -90,8 +87,6 @@ export default function PoliceContacts() {
           ))}
         </select>
       </div>
-
-      {/* Résultats */}
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Chargement...</div>
       ) : filtered.length === 0 ? (
@@ -99,46 +94,28 @@ export default function PoliceContacts() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map(contact => (
-            <div
-              key={contact.id}
-              className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
-            >
+            <div key={contact.id} className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="mb-3 flex items-start justify-between">
                 <div>
                   <h3 className="font-bold text-foreground">{contact.city}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {contact.commissioner_name}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{contact.commissioner_name}</p>
                 </div>
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  {contact.address}
-                </span>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{contact.address}</span>
               </div>
-
               <div className="space-y-2">
-                <a
-                  href={`tel:${contact.phone}`}
-                  className="flex items-center gap-2 text-sm text-primary hover:underline"
-                >
+                <a href={`tel:${contact.phone}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <Phone className="h-4 w-4" />
                   {contact.phone}
                 </a>
                 {contact.email && (
-                  <a
-                    href={`mailto:${contact.email}`}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                  >
+                  <a href={`mailto:${contact.email}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
                     <MapPin className="h-4 w-4" />
                     {contact.email}
                   </a>
                 )}
               </div>
-
               <div className="mt-4 border-t border-border pt-3">
-                <Link
-                  to="/declare"
-                  className="flex w-full items-center justify-center rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-white hover:bg-destructive/90 transition-colors"
-                >
+                <Link to="/declare" className="flex w-full items-center justify-center rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-white hover:bg-destructive/90 transition-colors">
                   Signaler un vol ici
                 </Link>
               </div>
