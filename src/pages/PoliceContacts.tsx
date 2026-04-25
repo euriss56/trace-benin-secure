@@ -116,7 +116,7 @@ export default function PoliceContacts() {
               </div>
 
               <div className="space-y-2">
-                
+                <a
                   href={`tel:${contact.phone}`}
                   className="flex items-center gap-2 text-sm text-primary hover:underline"
                 >
@@ -124,7 +124,7 @@ export default function PoliceContacts() {
                   {contact.phone}
                 </a>
                 {contact.email && (
-                  
+                  <a
                     href={`mailto:${contact.email}`}
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
                   >
