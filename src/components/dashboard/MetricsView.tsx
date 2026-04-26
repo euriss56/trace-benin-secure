@@ -27,6 +27,9 @@ export function MetricsView() {
     stolenCount: 0, suspectCount: 0, legitimateCount: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [aucRoc, setAucRoc] = useState<number | null>(null);
+  const [apiOk, setApiOk] = useState<boolean | null>(null);
+  const [apiLatency, setApiLatency] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
@@ -50,12 +53,21 @@ export function MetricsView() {
     });
   }, []);
 
-  const total = Math.max(1, g.totalVerifs);
-  const aucProxy = total > 0
-    ? 0.78 + 0.18 * (g.stolenCount / total) + 0.04 * Math.min(1, total / 100)
-    : 0;
-  const aucClamped = Math.max(0.5, Math.min(0.99, aucProxy));
-  const belowTarget = aucClamped < ML_TARGET;
+  // Fetch real AUC-ROC from /api/health
+  useEffect(() => {
+    let cancelled = false;
+    pingMlApi().then((h) => {
+      if (cancelled) return;
+      setApiOk(h.ok);
+      setAucRoc(h.auc_roc);
+      setApiLatency(h.response_time_ms);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const hasAuc = aucRoc !== null;
+  const aucDisplay = hasAuc ? aucRoc! : 0;
+  const belowTarget = hasAuc ? aucRoc! < ML_TARGET : false;
 
   return (
     <div className="space-y-6">
