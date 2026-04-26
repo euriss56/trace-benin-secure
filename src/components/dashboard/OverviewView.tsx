@@ -135,6 +135,8 @@ export function OverviewView() {
           </CardContent>
         </Card>
       )}
+
+      {isPro && <DealerCharts />}
     </div>
   );
 }
