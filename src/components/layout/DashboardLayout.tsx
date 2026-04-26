@@ -10,6 +10,7 @@ import {
   History,
 } from 'lucide-react';
 import { useAuth, type AppRole } from '@/hooks/useAuth';
+import { useStolenAlerts } from '@/hooks/useStolenAlerts';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
