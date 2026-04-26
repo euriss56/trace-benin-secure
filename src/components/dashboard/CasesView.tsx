@@ -13,6 +13,7 @@ import { Download } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { InvestigatorCharts } from './InvestigatorCharts';
 
 type Status = 'declared' | 'in_progress' | 'resolved';
 
@@ -95,8 +96,10 @@ export function CasesView() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
+    <div className="space-y-4">
+      <InvestigatorCharts />
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle>{t('dashboard.cases.title')}</CardTitle>
         <div className="flex items-center gap-2">
           <Select value={filter} onValueChange={(v) => setFilter(v as Status | 'all')}>
@@ -159,5 +162,6 @@ export function CasesView() {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }

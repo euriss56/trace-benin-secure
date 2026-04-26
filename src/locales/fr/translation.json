@@ -324,6 +324,17 @@
       "legitimate": "Légitime",
       "suspect": "Suspect",
       "stolen": "Volé"
+    },
+    "charts": {
+      "dealerMonthTitle": "Mes vérifications ce mois",
+      "dealerDistributionTitle": "Répartition des statuts IMEI",
+      "investigatorByQuartierTitle": "Signalements de vol par quartier — Cotonou",
+      "investigatorTrendTitle": "Évolution des signalements — 6 derniers mois",
+      "legitimate": "Légitime",
+      "suspect": "Suspect",
+      "stolen": "Cloné détecté",
+      "reports": "Signalements",
+      "empty": "Aucune donnée à afficher pour le moment."
     }
   },
   "auth": {

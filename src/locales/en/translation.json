@@ -324,6 +324,17 @@
       "legitimate": "Legitimate",
       "suspect": "Suspect",
       "stolen": "Stolen"
+    },
+    "charts": {
+      "dealerMonthTitle": "My verifications this month",
+      "dealerDistributionTitle": "IMEI status breakdown",
+      "investigatorByQuartierTitle": "Theft reports by neighborhood — Cotonou",
+      "investigatorTrendTitle": "Reports trend — last 6 months",
+      "legitimate": "Legitimate",
+      "suspect": "Suspect",
+      "stolen": "Clone detected",
+      "reports": "Reports",
+      "empty": "No data to display yet."
     }
   },
   "auth": {
