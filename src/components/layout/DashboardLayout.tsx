@@ -34,6 +34,7 @@ const NAV: NavItem[] = [
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { role } = useAuth();
   const { t } = useTranslation();
+  useStolenAlerts();
   const items = NAV.filter((i) => !i.roles || (role && i.roles.includes(role)));
 
   return (
