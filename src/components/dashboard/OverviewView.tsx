@@ -5,6 +5,7 @@ import { Award, History, Smartphone, ShieldCheck, TrendingUp } from 'lucide-reac
 import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { DealerCharts } from './DealerCharts';
 
 interface Stats {
   monthCount: number;
