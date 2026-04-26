@@ -40,9 +40,8 @@ export function MlMetricsWidget() {
   }, []);
 
   async function handlePing() {
-    const t0 = performance.now();
-    await pingMlApi();
-    setPingMs(Math.round(performance.now() - t0));
+    const health = await pingMlApi();
+    setPingMs(health.response_time_ms);
   }
 
   async function loadStats() {

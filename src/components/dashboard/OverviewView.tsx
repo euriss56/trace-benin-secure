@@ -27,19 +27,23 @@ export function OverviewView() {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
+    const startISO = startOfMonth.toISOString();
+    let cancelled = false;
 
-    Promise.all([
-      supabase.from('verifications').select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .gte('created_at', startOfMonth.toISOString()),
-      supabase.from('verifications').select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id),
-      supabase.from('declarations').select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id),
-      supabase.from('verifications').select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'stolen'),
-    ]).then(([m, tt, d, s]) => {
+    async function loadStats() {
+      const [m, tt, d, s] = await Promise.all([
+        supabase.from('verifications').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', startISO),
+        supabase.from('verifications').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        supabase.from('declarations').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        supabase.from('verifications').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'stolen'),
+      ]);
+      if (cancelled) return;
       setStats({
         monthCount: m.count ?? 0,
         totalCount: tt.count ?? 0,
@@ -47,7 +51,29 @@ export function OverviewView() {
         stolenHits: s.count ?? 0,
       });
       setLoading(false);
-    });
+    }
+
+    loadStats();
+
+    // Realtime: refresh counters when user's verifications/declarations change
+    const channel = supabase
+      .channel(`dashboard-overview-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'verifications', filter: `user_id=eq.${user.id}` },
+        () => loadStats()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'declarations', filter: `user_id=eq.${user.id}` },
+        () => loadStats()
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const isPro = role === 'dealer' || role === 'technicien';

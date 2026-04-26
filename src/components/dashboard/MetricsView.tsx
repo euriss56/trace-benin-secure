@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Activity, Users, Search, FileWarning, Target } from 'lucide-react';
+import { AlertTriangle, Activity, Users, Search, FileWarning, Target, WifiOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { MlMetricsWidget } from './MlMetricsWidget';
+import { pingMlApi } from '@/services/mlService';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,9 @@ export function MetricsView() {
     stolenCount: 0, suspectCount: 0, legitimateCount: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [aucRoc, setAucRoc] = useState<number | null>(null);
+  const [apiOk, setApiOk] = useState<boolean | null>(null);
+  const [apiLatency, setApiLatency] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
@@ -49,12 +53,21 @@ export function MetricsView() {
     });
   }, []);
 
-  const total = Math.max(1, g.totalVerifs);
-  const aucProxy = total > 0
-    ? 0.78 + 0.18 * (g.stolenCount / total) + 0.04 * Math.min(1, total / 100)
-    : 0;
-  const aucClamped = Math.max(0.5, Math.min(0.99, aucProxy));
-  const belowTarget = aucClamped < ML_TARGET;
+  // Fetch real AUC-ROC from /api/health
+  useEffect(() => {
+    let cancelled = false;
+    pingMlApi().then((h) => {
+      if (cancelled) return;
+      setApiOk(h.ok);
+      setAucRoc(h.auc_roc);
+      setApiLatency(h.response_time_ms);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const hasAuc = aucRoc !== null;
+  const aucDisplay = hasAuc ? aucRoc! : 0;
+  const belowTarget = hasAuc ? aucRoc! < ML_TARGET : false;
 
   return (
     <div className="space-y-6">
@@ -111,29 +124,47 @@ export function MetricsView() {
         </h2>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center justify-between">
+            <CardTitle className="text-base flex items-center justify-between gap-2 flex-wrap">
               <span className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-primary" />
                 {t('dashboard.metrics.mlTitle')}
               </span>
-              <Badge
-                variant={belowTarget ? 'destructive' : 'default'}
-                className={cn(!belowTarget && 'bg-success text-success-foreground')}
-              >
-                {belowTarget ? 'Sous l\'objectif' : 'Conforme'}
-              </Badge>
+              <div className="flex items-center gap-2">
+                {apiOk === true ? (
+                  <Badge className="gap-1 bg-success text-success-foreground">
+                    <Activity className="h-3 w-3" />
+                    API connectée ✅{apiLatency !== null ? ` · ${apiLatency}ms` : ''}
+                  </Badge>
+                ) : apiOk === false ? (
+                  <Badge variant="destructive" className="gap-1">
+                    <WifiOff className="h-3 w-3" /> API non connectée
+                  </Badge>
+                ) : (
+                  <Badge variant="outline">Vérification…</Badge>
+                )}
+                {hasAuc && (
+                  <Badge
+                    variant={belowTarget ? 'destructive' : 'default'}
+                    className={cn(!belowTarget && 'bg-success text-success-foreground')}
+                  >
+                    {belowTarget ? "Sous l'objectif" : 'Objectif atteint'}
+                  </Badge>
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <div className="flex items-center justify-between text-sm mb-1.5">
                 <span className="font-medium">{t('dashboard.metrics.auc')}</span>
-                <span className="tabular-nums font-bold text-lg">{aucClamped.toFixed(3)}</span>
+                <span className="tabular-nums font-bold text-lg">
+                  {hasAuc ? aucDisplay.toFixed(3) : '—'}
+                </span>
               </div>
               <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className={`h-full transition-all duration-500 ${belowTarget ? 'bg-destructive' : 'bg-success'}`}
-                  style={{ width: `${aucClamped * 100}%` }}
+                  style={{ width: `${aucDisplay * 100}%` }}
                 />
                 {/* Marqueur de cible */}
                 <div
@@ -143,13 +174,23 @@ export function MetricsView() {
                 />
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                <span>0.50</span>
+                <span>0.00</span>
                 <span className="font-medium">↑ Cible {ML_TARGET}</span>
                 <span>1.00</span>
               </div>
             </div>
 
-            {belowTarget && (
+            {!hasAuc && apiOk === false && (
+              <Alert>
+                <WifiOff className="h-4 w-4" />
+                <AlertTitle>API ML indisponible</AlertTitle>
+                <AlertDescription>
+                  L'AUC-ROC sera affiché dès que l'endpoint <code>/api/health</code> répondra.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {hasAuc && belowTarget && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>{t('dashboard.metrics.belowTitle')}</AlertTitle>
