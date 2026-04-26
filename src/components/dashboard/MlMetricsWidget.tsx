@@ -49,6 +49,55 @@ export function MlMetricsWidget() {
       setLoading(false);
       return;
     }
+
+    // Agrégations côté Supabase : 2 RPC légères au lieu de fetcher
+    // 100 lignes + toutes les lignes des dernières 24h.
+    const [recentRes, suspectRes] = await Promise.all([
+      supabase.rpc("ml_recent_metrics", { sample: 100 }),
+      supabase.rpc("ml_suspect_24h"),
+    ]);
+
+    if (!recentRes.error && Array.isArray(recentRes.data) && recentRes.data[0]) {
+      const m = recentRes.data[0] as {
+        count_total: number;
+        avg_score: number;
+        median_score: number;
+        high_risk_count: number;
+        legit_count: number;
+        suspect_count: number;
+        stolen_count: number;
+        last_check_at: string | null;
+      };
+      const count = Number(m.count_total) || 0;
+      const legit = Number(m.legit_count) || 0;
+      const susp = Number(m.suspect_count) || 0;
+      const stol = Number(m.stolen_count) || 0;
+
+      let total24 = 0;
+      let suspect24hPct = 0;
+      if (!suspectRes.error && Array.isArray(suspectRes.data) && suspectRes.data[0]) {
+        const s = suspectRes.data[0] as { total_24h: number; suspect_pct: number };
+        total24 = Number(s.total_24h) || 0;
+        suspect24hPct = Number(s.suspect_pct) || 0;
+      }
+
+      setStats({
+        count,
+        avgScore: Number(m.avg_score) || 0,
+        medianScore: Number(m.median_score) || 0,
+        legitimePct: count ? legit / count : 0,
+        suspectPct: count ? susp / count : 0,
+        volePct: count ? stol / count : 0,
+        suspect24hPct,
+        total24h: total24,
+        highRiskCount: Number(m.high_risk_count) || 0,
+        lastCheckAt: m.last_check_at,
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Fallback (si les RPC ne sont pas encore déployées)
     const { data: last100 } = await supabase
       .from("verifications")
       .select("status, score, created_at")
@@ -62,23 +111,24 @@ export function MlMetricsWidget() {
       .filter((s): s is number => s !== null);
     const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
     const sorted = [...scores].sort((a, b) => a - b);
-    const medianScore = sorted.length
-      ? sorted[Math.floor(sorted.length / 2)]
-      : 0;
-
+    const medianScore = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
     const legit = rows.filter((r: any) => r.status === "legitimate" || r.status === "legitime").length;
     const susp = rows.filter((r: any) => r.status === "suspect").length;
     const stol = rows.filter((r: any) => r.status === "stolen" || r.status === "vole").length;
     const highRisk = scores.filter((s) => s >= 0.8).length;
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: last24h } = await supabase
+    const { count: total24 } = await supabase
       .from("verifications")
-      .select("status")
+      .select("id", { count: "exact", head: true })
       .gte("created_at", since);
-    const r24 = last24h ?? [];
-    const susp24 = r24.filter((r: any) => r.status === "suspect").length;
-    const suspect24hPct = r24.length > 0 ? susp24 / r24.length : 0;
+    const { count: susp24 } = await supabase
+      .from("verifications")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since)
+      .eq("status", "suspect");
+    const total = total24 ?? 0;
+    const suspect24hPct = total > 0 ? (susp24 ?? 0) / total : 0;
 
     setStats({
       count,
@@ -88,7 +138,7 @@ export function MlMetricsWidget() {
       suspectPct: count ? susp / count : 0,
       volePct: count ? stol / count : 0,
       suspect24hPct,
-      total24h: r24.length,
+      total24h: total,
       highRiskCount: highRisk,
       lastCheckAt: rows[0]?.created_at ?? null,
     });

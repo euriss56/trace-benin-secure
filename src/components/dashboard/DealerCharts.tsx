@@ -17,13 +17,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 
-type Status = 'legitimate' | 'suspect' | 'stolen';
-
-interface VerifRow {
-  status: Status;
-  created_at: string;
-}
-
 const COLOR_LEGIT = '#22c55e';
 const COLOR_SUSPECT = '#f97316';
 const COLOR_STOLEN = '#ef4444';
@@ -35,31 +28,40 @@ interface DailyBucket {
   stolen: number;
 }
 
-function buildLast30Days(rows: VerifRow[]): DailyBucket[] {
-  const buckets = new Map<string, DailyBucket>();
+interface DistributionEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+/** Construit 30 buckets vides puis fusionne les lignes agrégées renvoyées par le RPC. */
+function buildDailyFromAggregated(
+  rows: Array<{ day: string; legitimate: number; suspect: number; stolen: number }>
+): DailyBucket[] {
+  const map = new Map<string, DailyBucket>();
   const now = new Date();
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(now.getDate() - i);
     const key = d.toISOString().slice(0, 10);
-    buckets.set(key, { day: key.slice(5), legitimate: 0, suspect: 0, stolen: 0 });
+    map.set(key, { day: key.slice(5), legitimate: 0, suspect: 0, stolen: 0 });
   }
   for (const r of rows) {
-    const key = r.created_at.slice(0, 10);
-    const b = buckets.get(key);
+    const key = (r.day ?? '').slice(0, 10);
+    const b = map.get(key);
     if (!b) continue;
-    if (r.status === 'legitimate') b.legitimate++;
-    else if (r.status === 'suspect') b.suspect++;
-    else if (r.status === 'stolen') b.stolen++;
+    b.legitimate = Number(r.legitimate ?? 0);
+    b.suspect = Number(r.suspect ?? 0);
+    b.stolen = Number(r.stolen ?? 0);
   }
-  return Array.from(buckets.values());
+  return Array.from(map.values());
 }
 
 export function DealerCharts() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [rows30, setRows30] = useState<VerifRow[]>([]);
-  const [rowsAll, setRowsAll] = useState<VerifRow[]>([]);
+  const [daily, setDaily] = useState<DailyBucket[]>([]);
+  const [distribution, setDistribution] = useState<DistributionEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,49 +70,84 @@ export function DealerCharts() {
       return;
     }
     let cancelled = false;
-    const since = new Date();
-    since.setDate(since.getDate() - 30);
-    const sinceISO = since.toISOString();
 
     async function load() {
-      const [r30, rAll] = await Promise.all([
-        supabase
+      // Requêtes agrégées côté Supabase (GROUP BY en SQL)
+      const [dailyRes, distRes] = await Promise.all([
+        supabase.rpc('verifications_daily_by_status', { days: 30 }),
+        supabase.rpc('verifications_status_distribution'),
+      ]);
+      if (cancelled) return;
+
+      // -------- Daily (30 jours) --------
+      if (!dailyRes.error && Array.isArray(dailyRes.data)) {
+        setDaily(buildDailyFromAggregated(dailyRes.data as any));
+      } else {
+        // Fallback : ancien fetch ciblé si la fonction RPC n'est pas (encore) déployée
+        const since = new Date();
+        since.setDate(since.getDate() - 30);
+        const { data } = await supabase
           .from('verifications')
           .select('status, created_at')
           .eq('user_id', user.id)
-          .gte('created_at', sinceISO)
-          .order('created_at', { ascending: true }),
-        supabase
-          .from('verifications')
-          .select('status, created_at')
-          .eq('user_id', user.id),
-      ]);
-      if (cancelled) return;
-      setRows30((r30.data ?? []) as VerifRow[]);
-      setRowsAll((rAll.data ?? []) as VerifRow[]);
+          .gte('created_at', since.toISOString());
+        const grouped = new Map<string, { legitimate: number; suspect: number; stolen: number }>();
+        for (const r of (data ?? []) as Array<{ status: string; created_at: string }>) {
+          const key = r.created_at.slice(0, 10);
+          const b = grouped.get(key) ?? { legitimate: 0, suspect: 0, stolen: 0 };
+          if (r.status === 'legitimate') b.legitimate++;
+          else if (r.status === 'suspect') b.suspect++;
+          else if (r.status === 'stolen') b.stolen++;
+          grouped.set(key, b);
+        }
+        setDaily(
+          buildDailyFromAggregated(
+            Array.from(grouped.entries()).map(([day, v]) => ({ day, ...v }))
+          )
+        );
+      }
+
+      // -------- Distribution globale --------
+      if (!distRes.error && Array.isArray(distRes.data)) {
+        const counts: Record<string, number> = { legitimate: 0, suspect: 0, stolen: 0 };
+        for (const r of distRes.data as Array<{ status: string; count: number }>) {
+          if (r.status in counts) counts[r.status] = Number(r.count);
+        }
+        setDistribution([
+          { name: t('dashboard.charts.legitimate'), value: counts.legitimate, color: COLOR_LEGIT },
+          { name: t('dashboard.charts.suspect'), value: counts.suspect, color: COLOR_SUSPECT },
+          { name: t('dashboard.charts.stolen'), value: counts.stolen, color: COLOR_STOLEN },
+        ]);
+      } else {
+        // Fallback minimaliste : count par statut via head requests
+        const [l, s, st] = await Promise.all([
+          supabase.from('verifications').select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id).eq('status', 'legitimate'),
+          supabase.from('verifications').select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id).eq('status', 'suspect'),
+          supabase.from('verifications').select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id).eq('status', 'stolen'),
+        ]);
+        setDistribution([
+          { name: t('dashboard.charts.legitimate'), value: l.count ?? 0, color: COLOR_LEGIT },
+          { name: t('dashboard.charts.suspect'), value: s.count ?? 0, color: COLOR_SUSPECT },
+          { name: t('dashboard.charts.stolen'), value: st.count ?? 0, color: COLOR_STOLEN },
+        ]);
+      }
+
       setLoading(false);
     }
+
     load();
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, t]);
 
-  const daily = useMemo(() => buildLast30Days(rows30), [rows30]);
-
-  const distribution = useMemo(() => {
-    const counts = { legitimate: 0, suspect: 0, stolen: 0 };
-    for (const r of rowsAll) {
-      if (r.status in counts) counts[r.status]++;
-    }
-    return [
-      { name: t('dashboard.charts.legitimate'), value: counts.legitimate, color: COLOR_LEGIT },
-      { name: t('dashboard.charts.suspect'), value: counts.suspect, color: COLOR_SUSPECT },
-      { name: t('dashboard.charts.stolen'), value: counts.stolen, color: COLOR_STOLEN },
-    ];
-  }, [rowsAll, t]);
-
-  const totalAll = distribution.reduce((s, d) => s + d.value, 0);
+  const totalAll = useMemo(
+    () => distribution.reduce((s, d) => s + d.value, 0),
+    [distribution]
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

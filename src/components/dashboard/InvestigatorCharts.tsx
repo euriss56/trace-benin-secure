@@ -15,11 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 
-interface DeclRow {
-  quartier: string | null;
-  created_at: string;
-}
-
 const BLUE_DARK = '#1A3A6B';
 const BLUE_LIGHT = '#4A90D9';
 
@@ -32,9 +27,22 @@ function lerpColor(a: string, b: string, t: number) {
   return `rgb(${r}, ${g}, ${bl})`;
 }
 
+interface QuartierBucket {
+  name: string;
+  count: number;
+  color: string;
+}
+
+interface MonthBucket {
+  key: string;
+  label: string;
+  count: number;
+}
+
 export function InvestigatorCharts() {
   const { t, i18n } = useTranslation();
-  const [rows, setRows] = useState<DeclRow[]>([]);
+  const [byQuartier, setByQuartier] = useState<QuartierBucket[]>([]);
+  const [monthly, setMonthly] = useState<MonthBucket[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,18 +51,80 @@ export function InvestigatorCharts() {
       return;
     }
     let cancelled = false;
-    const since = new Date();
-    since.setMonth(since.getMonth() - 6);
-    since.setDate(1);
-    since.setHours(0, 0, 0, 0);
 
     async function load() {
-      const { data } = await supabase
-        .from('declarations')
-        .select('quartier, created_at')
-        .order('created_at', { ascending: true });
+      // Requêtes agrégées côté Supabase
+      const [qRes, mRes] = await Promise.all([
+        supabase.rpc('declarations_by_quartier', { limit_count: 12 }),
+        supabase.rpc('declarations_monthly', { months: 6 }),
+      ]);
       if (cancelled) return;
-      setRows((data ?? []) as DeclRow[]);
+
+      // -------- Quartiers --------
+      let quartierRows: Array<{ quartier: string; count: number }> = [];
+      if (!qRes.error && Array.isArray(qRes.data)) {
+        quartierRows = (qRes.data as any[]).map((r) => ({
+          quartier: r.quartier,
+          count: Number(r.count),
+        }));
+      } else {
+        // Fallback : on récupère uniquement la colonne quartier
+        const { data } = await supabase
+          .from('declarations')
+          .select('quartier')
+          .not('quartier', 'is', null);
+        const counts = new Map<string, number>();
+        for (const r of (data ?? []) as Array<{ quartier: string | null }>) {
+          const q = (r.quartier ?? '').trim();
+          if (!q) continue;
+          counts.set(q, (counts.get(q) ?? 0) + 1);
+        }
+        quartierRows = Array.from(counts.entries())
+          .map(([quartier, count]) => ({ quartier, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 12);
+      }
+      const max = quartierRows.length;
+      setByQuartier(
+        quartierRows.map((d, i) => ({
+          name: d.quartier,
+          count: d.count,
+          color: lerpColor(BLUE_DARK, BLUE_LIGHT, max <= 1 ? 0 : i / (max - 1)),
+        }))
+      );
+
+      // -------- Mensuel --------
+      const fmt = new Intl.DateTimeFormat(i18n.language, { month: 'short', year: '2-digit' });
+      const buckets = new Map<string, MonthBucket>();
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        buckets.set(key, { key, label: fmt.format(d), count: 0 });
+      }
+
+      if (!mRes.error && Array.isArray(mRes.data)) {
+        for (const r of mRes.data as Array<{ month: string; count: number }>) {
+          const d = new Date(r.month);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const b = buckets.get(key);
+          if (b) b.count = Number(r.count);
+        }
+      } else {
+        // Fallback : créé_at uniquement, fenêtre 6 mois
+        const since = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+        const { data } = await supabase
+          .from('declarations')
+          .select('created_at')
+          .gte('created_at', since.toISOString());
+        for (const r of (data ?? []) as Array<{ created_at: string }>) {
+          const d = new Date(r.created_at);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const b = buckets.get(key);
+          if (b) b.count++;
+        }
+      }
+      setMonthly(Array.from(buckets.values()));
       setLoading(false);
     }
     load();
@@ -72,40 +142,7 @@ export function InvestigatorCharts() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const byQuartier = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const r of rows) {
-      const q = (r.quartier ?? '').trim();
-      if (!q) continue;
-      counts.set(q, (counts.get(q) ?? 0) + 1);
-    }
-    const arr = Array.from(counts.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 12);
-    const max = arr.length;
-    return arr.map((d, i) => ({ ...d, color: lerpColor(BLUE_DARK, BLUE_LIGHT, max <= 1 ? 0 : i / (max - 1)) }));
-  }, [rows]);
-
-  const monthly = useMemo(() => {
-    const buckets = new Map<string, { key: string; label: string; count: number }>();
-    const now = new Date();
-    const fmt = new Intl.DateTimeFormat(i18n.language, { month: 'short', year: '2-digit' });
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      buckets.set(key, { key, label: fmt.format(d), count: 0 });
-    }
-    for (const r of rows) {
-      const d = new Date(r.created_at);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const b = buckets.get(key);
-      if (b) b.count++;
-    }
-    return Array.from(buckets.values());
-  }, [rows, i18n.language]);
+  }, [i18n.language]);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
