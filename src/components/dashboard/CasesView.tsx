@@ -162,5 +162,6 @@ export function CasesView() {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }
