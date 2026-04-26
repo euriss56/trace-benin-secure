@@ -10,6 +10,7 @@ import {
   History,
 } from 'lucide-react';
 import { useAuth, type AppRole } from '@/hooks/useAuth';
+import { useStolenAlerts } from '@/hooks/useStolenAlerts';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +34,7 @@ const NAV: NavItem[] = [
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { role } = useAuth();
   const { t } = useTranslation();
+  useStolenAlerts();
   const items = NAV.filter((i) => !i.roles || (role && i.roles.includes(role)));
 
   return (
