@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Activity, Users, Search, FileWarning, Target } from 'lucide-react';
+import { AlertTriangle, Activity, Users, Search, FileWarning, Target, WifiOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { MlMetricsWidget } from './MlMetricsWidget';
+import { pingMlApi } from '@/services/mlService';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
