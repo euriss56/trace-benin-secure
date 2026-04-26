@@ -13,6 +13,7 @@ import { Download } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { InvestigatorCharts } from './InvestigatorCharts';
 
 type Status = 'declared' | 'in_progress' | 'resolved';
 
