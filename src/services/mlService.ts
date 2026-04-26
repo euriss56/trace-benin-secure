@@ -248,21 +248,39 @@ export async function batchCheckIMEI(imeis: string[], signal?: AbortSignal): Pro
 }
 
 /**
- * Ping passif : tente un check sur un IMEI factice valide pour rafraîchir le statut.
- * À appeler depuis le dashboard pour afficher l'état temps réel.
+ * Ping de l'API ML : interroge /api/health pour rafraîchir le statut,
+ * lire l'AUC-ROC réel et mesurer le temps de réponse.
  */
-export async function pingMlApi(): Promise<boolean> {
+export interface MlHealth {
+  ok: boolean;
+  auc_roc: number | null;
+  response_time_ms: number | null;
+  raw?: Record<string, unknown>;
+}
+
+export async function pingMlApi(): Promise<MlHealth> {
   if (isPlaceholder(ML_API_URL)) {
     setAvailable(false);
-    return false;
+    return { ok: false, auc_roc: null, response_time_ms: null };
   }
+  const t0 = performance.now();
   try {
     const res = await fetch(`${ML_API_URL}/api/health`, { method: "GET" });
-    const ok = res.ok;
-    setAvailable(ok);
-    return ok;
+    const elapsed = Math.round(performance.now() - t0);
+    if (!res.ok) {
+      setAvailable(false);
+      return { ok: false, auc_roc: null, response_time_ms: elapsed };
+    }
+    let body: Record<string, unknown> = {};
+    try { body = (await res.json()) as Record<string, unknown>; } catch { /* empty body */ }
+    const aucRaw = body.auc_roc ?? body.aucRoc ?? body.auc;
+    const auc = typeof aucRaw === "number" && Number.isFinite(aucRaw) ? clampScore(aucRaw) : null;
+    const rtRaw = body.response_time_ms;
+    const rt = typeof rtRaw === "number" && Number.isFinite(rtRaw) ? rtRaw : elapsed;
+    setAvailable(true);
+    return { ok: true, auc_roc: auc, response_time_ms: rt, raw: body };
   } catch {
     setAvailable(false);
-    return false;
+    return { ok: false, auc_roc: null, response_time_ms: null };
   }
 }
