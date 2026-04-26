@@ -324,6 +324,17 @@
       "legitimate": "Legítimo",
       "suspect": "Sospechoso",
       "stolen": "Robado"
+    },
+    "charts": {
+      "dealerMonthTitle": "Mis verificaciones este mes",
+      "dealerDistributionTitle": "Distribución de estados IMEI",
+      "investigatorByQuartierTitle": "Denuncias de robo por barrio — Cotonú",
+      "investigatorTrendTitle": "Evolución de denuncias — últimos 6 meses",
+      "legitimate": "Legítimo",
+      "suspect": "Sospechoso",
+      "stolen": "Clon detectado",
+      "reports": "Denuncias",
+      "empty": "No hay datos para mostrar todavía."
     }
   },
   "auth": {
