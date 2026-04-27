@@ -69,7 +69,16 @@ export default function Verify() {
 
       const r = await verifyImei(imei);
       await cacheResult(r);
-      recordVerification(r).catch(() => { /* silencieux */ });
+      const rec = await recordVerification(r);
+      if (!rec.ok && rec.error && rec.error !== 'not-authenticated' && rec.error !== 'supabase-not-configured') {
+        toast({
+          title: t("verify.saveErrorTitle", { defaultValue: "Sauvegarde impossible" }),
+          description: t("verify.saveErrorDesc", {
+            defaultValue: "La vérification n'a pas pu être enregistrée. Vérifiez les politiques RLS de la table 'verifications'.",
+          }),
+          variant: "destructive",
+        });
+      }
       setResult(r);
       setFromCache(false);
       setOpen(true);
