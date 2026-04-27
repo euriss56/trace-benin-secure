@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { PageTransition } from "@/components/motion/PageTransition";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -31,20 +30,22 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AppLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/verify" element={<Verify />} />
-                <Route path="/declare" element={<Declare />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/dashboard/*" element={<Dashboard />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/contacts-police" element={<PoliceContacts />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <PageTransition>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/verify" element={<Verify />} />
+                  <Route path="/declare" element={<Declare />} />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/dashboard/*" element={<Dashboard />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/contacts-police" element={<PoliceContacts />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </PageTransition>
             </AppLayout>
           </AuthProvider>
         </BrowserRouter>
