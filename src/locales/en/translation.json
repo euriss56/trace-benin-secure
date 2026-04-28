@@ -257,6 +257,10 @@
       "progressTitle": "Certified Dealer badge progress",
       "progressDesc": "{{count}} / 20 verifications this month — {{remaining}} more to unlock the badge."
     },
+    "recent": {
+      "title": "Last 20 IMEI checks",
+      "viewAll": "View all"
+    },
     "history": {
       "title": "My IMEI verifications",
       "empty": "No verifications recorded. Go to",
