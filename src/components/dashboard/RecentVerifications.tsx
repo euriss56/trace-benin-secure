@@ -22,6 +22,7 @@ export function RecentVerifications() {
   const blocked = role === 'enqueteur' || role === 'admin';
 
   useEffect(() => {
+    if (blocked) { setLoading(false); return; }
     if (!user || !isSupabaseConfigured) {
       setLoading(false);
       return;
