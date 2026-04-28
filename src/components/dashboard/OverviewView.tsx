@@ -81,7 +81,9 @@ export function OverviewView() {
   }, [user]);
 
   const isPro = role === 'dealer' || role === 'technicien';
-  const certified = isPro && stats.monthCount >= 20;
+  const isStaff = role === 'enqueteur' || role === 'admin';
+  const showHistory = !isStaff;
+  const certified = isPro && stats.monthCount >= CERTIF_THRESHOLD;
 
   return (
     <div className="space-y-6">
