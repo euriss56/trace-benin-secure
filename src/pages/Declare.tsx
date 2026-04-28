@@ -34,6 +34,15 @@ import { isValidLuhn, sanitizeImei } from "@/lib/luhn";
 import { COTONOU_QUARTIERS } from "@/lib/quartiers";
 import { generateDeclarationReference } from "@/lib/declaration-ref";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
+import { MotionTap, StaggerGroup, StaggerItem } from "@/components/motion/MotionPrimitives";
+
+const errorMotion = {
+  initial: { opacity: 0, y: -4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.18 },
+};
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
@@ -201,138 +210,190 @@ export default function Declare() {
           </CardHeader>
           <CardContent>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="device_brand">{t("declare.brand")} *</Label>
-                  <Input id="device_brand" placeholder={t("declare.brandPlaceholder")} {...form.register("device_brand")} />
-                  {form.formState.errors.device_brand && (
-                    <p className="text-xs text-destructive">{form.formState.errors.device_brand.message}</p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="device_model">{t("declare.model")} *</Label>
-                  <Input id="device_model" placeholder={t("declare.modelPlaceholder")} {...form.register("device_model")} />
-                  {form.formState.errors.device_model && (
-                    <p className="text-xs text-destructive">{form.formState.errors.device_model.message}</p>
-                  )}
-                </div>
-              </div>
+              <StaggerGroup className="space-y-5">
+                <StaggerItem>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="device_brand">{t("declare.brand")} *</Label>
+                      <Input id="device_brand" placeholder={t("declare.brandPlaceholder")} {...form.register("device_brand")} />
+                      <AnimatePresence>
+                        {form.formState.errors.device_brand && (
+                          <motion.p {...errorMotion} className="text-xs text-destructive">
+                            {form.formState.errors.device_brand.message}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="device_model">{t("declare.model")} *</Label>
+                      <Input id="device_model" placeholder={t("declare.modelPlaceholder")} {...form.register("device_model")} />
+                      <AnimatePresence>
+                        {form.formState.errors.device_model && (
+                          <motion.p {...errorMotion} className="text-xs text-destructive">
+                            {form.formState.errors.device_model.message}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </StaggerItem>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="device_reference">{t("declare.deviceRef")}</Label>
-                <Input
-                  id="device_reference"
-                  placeholder={t("declare.deviceRefPlaceholder")}
-                  {...form.register("device_reference")}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="imei">{t("declare.imei")} *</Label>
-                <Input
-                  id="imei"
-                  inputMode="numeric"
-                  maxLength={15}
-                  placeholder={t("declare.imeiPlaceholder")}
-                  className={`font-mono tracking-widest ${
-                    imeiLuhnOk === null
-                      ? ""
-                      : imeiLuhnOk
-                        ? "border-success focus-visible:ring-success"
-                        : "border-destructive focus-visible:ring-destructive"
-                  }`}
-                  {...form.register("imei", {
-                    onChange: (e) => form.setValue("imei", sanitizeImei(e.target.value), { shouldValidate: true }),
-                  })}
-                />
-                {form.formState.errors.imei && (
-                  <p className="text-xs text-destructive">{form.formState.errors.imei.message}</p>
-                )}
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="theft_date">{t("declare.theftDate")} *</Label>
+                <StaggerItem className="space-y-1.5">
+                  <Label htmlFor="device_reference">{t("declare.deviceRef")}</Label>
                   <Input
-                    id="theft_date"
-                    type="date"
-                    max={new Date().toISOString().slice(0, 10)}
-                    {...form.register("theft_date")}
+                    id="device_reference"
+                    placeholder={t("declare.deviceRefPlaceholder")}
+                    {...form.register("device_reference")}
                   />
-                  {form.formState.errors.theft_date && (
-                    <p className="text-xs text-destructive">{form.formState.errors.theft_date.message}</p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="quartier">{t("declare.quartier")} *</Label>
-                  <Select
-                    value={form.watch("quartier")}
-                    onValueChange={(v) =>
-                      form.setValue("quartier", v as FormValues["quartier"], { shouldValidate: true })
-                    }
-                  >
-                    <SelectTrigger id="quartier">
-                      <SelectValue placeholder={t("declare.quartierPlaceholder")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COTONOU_QUARTIERS.map((q) => (
-                        <SelectItem key={q} value={q}>
-                          {q}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.quartier && (
-                    <p className="text-xs text-destructive">{form.formState.errors.quartier.message}</p>
-                  )}
-                </div>
-              </div>
+                </StaggerItem>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="description">{t("declare.description")} *</Label>
-                <Textarea
-                  id="description"
-                  rows={5}
-                  placeholder={t("declare.descriptionPlaceholder")}
-                  {...form.register("description")}
-                />
-                {form.formState.errors.description && (
-                  <p className="text-xs text-destructive">{form.formState.errors.description.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="photo">{t("declare.photo")}</Label>
-                <div className="flex items-center gap-3">
-                  <label
-                    htmlFor="photo"
-                    className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                <StaggerItem className="space-y-1.5">
+                  <Label htmlFor="imei">{t("declare.imei")} *</Label>
+                  <motion.div
+                    animate={imeiLuhnOk === false ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
                   >
-                    <Upload className="h-4 w-4" />
-                    {t("declare.chooseFile")}
-                  </label>
-                  <input
-                    id="photo"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="sr-only"
-                    onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+                    <Input
+                      id="imei"
+                      inputMode="numeric"
+                      maxLength={15}
+                      placeholder={t("declare.imeiPlaceholder")}
+                      className={`font-mono tracking-widest ${
+                        imeiLuhnOk === null
+                          ? ""
+                          : imeiLuhnOk
+                            ? "border-success focus-visible:ring-success"
+                            : "border-destructive focus-visible:ring-destructive"
+                      }`}
+                      {...form.register("imei", {
+                        onChange: (e) => form.setValue("imei", sanitizeImei(e.target.value), { shouldValidate: true }),
+                      })}
+                    />
+                  </motion.div>
+                  <AnimatePresence>
+                    {form.formState.errors.imei && (
+                      <motion.p {...errorMotion} className="text-xs text-destructive">
+                        {form.formState.errors.imei.message}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="theft_date">{t("declare.theftDate")} *</Label>
+                      <Input
+                        id="theft_date"
+                        type="date"
+                        max={new Date().toISOString().slice(0, 10)}
+                        {...form.register("theft_date")}
+                      />
+                      <AnimatePresence>
+                        {form.formState.errors.theft_date && (
+                          <motion.p {...errorMotion} className="text-xs text-destructive">
+                            {form.formState.errors.theft_date.message}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quartier">{t("declare.quartier")} *</Label>
+                      <Select
+                        value={form.watch("quartier")}
+                        onValueChange={(v) =>
+                          form.setValue("quartier", v as FormValues["quartier"], { shouldValidate: true })
+                        }
+                      >
+                        <SelectTrigger id="quartier">
+                          <SelectValue placeholder={t("declare.quartierPlaceholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COTONOU_QUARTIERS.map((q) => (
+                            <SelectItem key={q} value={q}>
+                              {q}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <AnimatePresence>
+                        {form.formState.errors.quartier && (
+                          <motion.p {...errorMotion} className="text-xs text-destructive">
+                            {form.formState.errors.quartier.message}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </StaggerItem>
+
+                <StaggerItem className="space-y-1.5">
+                  <Label htmlFor="description">{t("declare.description")} *</Label>
+                  <Textarea
+                    id="description"
+                    rows={5}
+                    placeholder={t("declare.descriptionPlaceholder")}
+                    {...form.register("description")}
                   />
-                  {photo && (
-                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <FileImage className="h-4 w-4" />
-                      {photo.name} · {(photo.size / 1024).toFixed(0)} Ko
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{t("declare.photoHelp")}</p>
-                {photoError && <p className="text-xs text-destructive">{photoError}</p>}
-              </div>
+                  <AnimatePresence>
+                    {form.formState.errors.description && (
+                      <motion.p {...errorMotion} className="text-xs text-destructive">
+                        {form.formState.errors.description.message}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </StaggerItem>
 
-              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting ? <Loader2 className="animate-spin" /> : <ShieldAlert />}
-                {t("declare.submit")}
-              </Button>
+                <StaggerItem className="space-y-1.5">
+                  <Label htmlFor="photo">{t("declare.photo")}</Label>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="photo"
+                      className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {t("declare.chooseFile")}
+                    </label>
+                    <input
+                      id="photo"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+                    />
+                    <AnimatePresence>
+                      {photo && (
+                        <motion.span
+                          initial={{ opacity: 0, x: -6 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -6 }}
+                          className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                        >
+                          <FileImage className="h-4 w-4" />
+                          {photo.name} · {(photo.size / 1024).toFixed(0)} Ko
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("declare.photoHelp")}</p>
+                  <AnimatePresence>
+                    {photoError && (
+                      <motion.p {...errorMotion} className="text-xs text-destructive">
+                        {photoError}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <MotionTap className="w-full" disabled={submitting}>
+                    <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                      {submitting ? <Loader2 className="animate-spin" /> : <ShieldAlert />}
+                      {t("declare.submit")}
+                    </Button>
+                  </MotionTap>
+                </StaggerItem>
+              </StaggerGroup>
             </form>
           </CardContent>
         </Card>

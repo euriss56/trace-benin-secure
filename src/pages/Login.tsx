@@ -1,8 +1,10 @@
 import { useState, FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { AnimatedInput } from '@/components/motion/AnimatedInput';
+import { MotionTap, StaggerGroup, StaggerItem } from '@/components/motion/MotionPrimitives';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,15 +19,24 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [invalid, setInvalid] = useState<{ email?: boolean; password?: boolean }>({});
 
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const nextInvalid = { email: !email, password: password.length < 6 };
+    if (nextInvalid.email || nextInvalid.password) {
+      setInvalid(nextInvalid);
+      setTimeout(() => setInvalid({}), 500);
+      return;
+    }
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) {
+      setInvalid({ email: true, password: true });
+      setTimeout(() => setInvalid({}), 500);
       toast({ title: t('auth.loginFailTitle'), description: error, variant: 'destructive' });
       return;
     }
@@ -55,40 +66,55 @@ export default function Login() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('auth.emailPlaceholder')}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t('auth.password')}</Label>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="text-xs text-primary hover:underline"
-                >
-                  {t('auth.forgotPassword')}
-                </button>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t('auth.loginLoading') : t('auth.loginSubmit')}
-            </Button>
+            <StaggerGroup className="space-y-4">
+              <StaggerItem className="space-y-2">
+                <Label htmlFor="email">{t('auth.email')}</Label>
+                <AnimatedInput
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  invalid={invalid.email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('auth.emailPlaceholder')}
+                />
+              </StaggerItem>
+              <StaggerItem className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">{t('auth.password')}</Label>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {t('auth.forgotPassword')}
+                  </button>
+                </div>
+                <AnimatedInput
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  invalid={invalid.password}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </StaggerItem>
+              <StaggerItem>
+                <MotionTap className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    <motion.span
+                      key={loading ? 'loading' : 'idle'}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      {loading ? t('auth.loginLoading') : t('auth.loginSubmit')}
+                    </motion.span>
+                  </Button>
+                </MotionTap>
+              </StaggerItem>
+            </StaggerGroup>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {t('auth.noAccount')}{' '}
