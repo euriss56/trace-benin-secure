@@ -14,8 +14,9 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { InvestigatorCharts } from './InvestigatorCharts';
+import { declarationStatusClass, declarationStatusLabel, type DeclarationStatus } from '@/lib/status-style';
 
-type Status = 'declared' | 'in_progress' | 'resolved';
+type Status = DeclarationStatus;
 
 interface CaseRow {
   id: string;
@@ -37,16 +38,7 @@ export function CasesView() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Status | 'all'>('all');
 
-  const labels: Record<Status, string> = {
-    declared: t('dashboard.cases.statusDeclared'),
-    in_progress: t('dashboard.cases.statusInProgress'),
-    resolved: t('dashboard.cases.statusResolved'),
-  };
-  const cls: Record<Status, string> = {
-    declared: 'bg-destructive text-destructive-foreground',
-    in_progress: 'bg-warning text-warning-foreground',
-    resolved: 'bg-success text-success-foreground',
-  };
+
 
   const load = () => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
