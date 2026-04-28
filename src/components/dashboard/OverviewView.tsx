@@ -6,6 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { DealerCharts } from './DealerCharts';
+import { RecentVerifications } from './RecentVerifications';
+
+const CERTIF_THRESHOLD = 20;
 
 interface Stats {
   monthCount: number;
@@ -78,7 +81,9 @@ export function OverviewView() {
   }, [user]);
 
   const isPro = role === 'dealer' || role === 'technicien';
-  const certified = isPro && stats.monthCount >= 20;
+  const isStaff = role === 'enqueteur' || role === 'admin';
+  const showHistory = !isStaff;
+  const certified = isPro && stats.monthCount >= CERTIF_THRESHOLD;
 
   return (
     <div className="space-y-6">
@@ -123,13 +128,13 @@ export function OverviewView() {
             <div className="text-sm text-muted-foreground mb-2">
               {t('dashboard.overview.progressDesc', {
                 count: stats.monthCount,
-                remaining: Math.max(0, 20 - stats.monthCount),
+                remaining: Math.max(0, CERTIF_THRESHOLD - stats.monthCount),
               })}
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full bg-primary transition-all"
-                style={{ width: `${Math.min(100, (stats.monthCount / 20) * 100)}%` }}
+                style={{ width: `${Math.min(100, (stats.monthCount / CERTIF_THRESHOLD) * 100)}%` }}
               />
             </div>
           </CardContent>
@@ -137,6 +142,8 @@ export function OverviewView() {
       )}
 
       {isPro && <DealerCharts />}
+
+      {showHistory && <RecentVerifications />}
     </div>
   );
 }

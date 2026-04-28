@@ -257,6 +257,10 @@
       "progressTitle": "Progreso de la insignia Distribuidor Certificado",
       "progressDesc": "{{count}} / 20 verificaciones este mes — quedan {{remaining}} para obtener la insignia."
     },
+    "recent": {
+      "title": "Últimos 20 IMEI verificados",
+      "viewAll": "Ver todo"
+    },
     "history": {
       "title": "Mis verificaciones IMEI",
       "empty": "Ninguna verificación registrada. Vaya a",

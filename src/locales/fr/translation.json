@@ -257,6 +257,10 @@
       "progressTitle": "Progression badge Dealer Certifié",
       "progressDesc": "{{count}} / 20 vérifications ce mois — encore {{remaining}} pour décrocher le badge."
     },
+    "recent": {
+      "title": "20 derniers IMEI vérifiés",
+      "viewAll": "Tout voir"
+    },
     "history": {
       "title": "Mes vérifications IMEI",
       "empty": "Aucune vérification enregistrée. Rendez-vous sur",
