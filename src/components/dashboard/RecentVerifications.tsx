@@ -58,7 +58,9 @@ export function RecentVerifications() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, blocked]);
+
+  if (blocked) return null;
 
   return (
     <Card>
