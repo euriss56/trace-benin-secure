@@ -1,28 +1,25 @@
 import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type { VerificationRow } from '@/lib/verification-history';
 import { useTranslation } from 'react-i18next';
+import { imeiStatusClass, imeiStatusLabel } from '@/lib/status-style';
 
 export function HistoryView() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<VerificationRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const statusLabel = (s: string) =>
-    s === 'legitimate' ? t('dashboard.history.statusLegitimate')
-    : s === 'suspect' ? t('dashboard.history.statusSuspect')
-    : t('dashboard.history.statusStolen');
-
-  const statusClass = (s: string) =>
-    s === 'legitimate' ? 'bg-success text-success-foreground'
-    : s === 'suspect' ? 'bg-warning text-warning-foreground'
-    : 'bg-destructive text-destructive-foreground';
+  // Garde-fou frontend : enquêteur/admin n'ont pas d'historique IMEI personnel.
+  // Doublé côté backend par les RLS sur la table `verifications`.
+  const blocked = role === 'enqueteur' || role === 'admin';
 
   useEffect(() => {
+    if (blocked) { setLoading(false); return; }
     if (!user || !isSupabaseConfigured) { setLoading(false); return; }
     supabase
       .from('verifications')
@@ -34,7 +31,9 @@ export function HistoryView() {
         setRows((data ?? []) as VerificationRow[]);
         setLoading(false);
       });
-  }, [user]);
+  }, [user, blocked]);
+
+  if (blocked) return <Navigate to="/dashboard" replace />;
 
   return (
     <Card>
