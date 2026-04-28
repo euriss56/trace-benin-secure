@@ -16,6 +16,8 @@ import { ResultDialog } from "@/components/verify/ResultDialog";
 import { CsvBatchVerify } from "@/components/verify/CsvBatchVerify";
 import { MlScoreCard } from "@/components/verify/MlScoreCard";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { MotionTap } from "@/components/motion/MotionPrimitives";
 import { Trans, useTranslation } from "react-i18next";
 
 export default function Verify() {
@@ -141,43 +143,61 @@ export default function Verify() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="imei">{t("verify.imeiLabel")}</Label>
-                <Input
-                  id="imei"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  placeholder={t("verify.imeiPlaceholder")}
-                  value={imei}
-                  onChange={(e) => setImei(sanitizeImei(e.target.value))}
-                  maxLength={15}
-                  className={cn("font-mono text-lg tracking-widest h-12", borderState)}
-                  aria-invalid={isComplete && !luhnOk}
-                  aria-describedby="imei-status"
-                />
+                <motion.div
+                  animate={
+                    isComplete && luhnOk === false
+                      ? { x: [0, -8, 8, -6, 6, 0] }
+                      : { x: 0 }
+                  }
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                >
+                  <Input
+                    id="imei"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder={t("verify.imeiPlaceholder")}
+                    value={imei}
+                    onChange={(e) => setImei(sanitizeImei(e.target.value))}
+                    maxLength={15}
+                    className={cn("font-mono text-lg tracking-widest h-12", borderState)}
+                    aria-invalid={isComplete && !luhnOk}
+                    aria-describedby="imei-status"
+                  />
+                </motion.div>
                 <div id="imei-status" className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground font-mono">{imei.length} / 15</span>
-                  {isComplete && (
-                    <span
-                      className={cn(
-                        "flex items-center gap-1.5 font-medium",
-                        luhnOk ? "text-success" : "text-destructive",
-                      )}
-                    >
-                      {luhnOk ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                      {luhnOk ? t("verify.luhnValid") : t("verify.luhnInvalid")}
-                    </span>
-                  )}
+                  <AnimatePresence mode="wait">
+                    {isComplete && (
+                      <motion.span
+                        key={luhnOk ? "ok" : "ko"}
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.2 }}
+                        className={cn(
+                          "flex items-center gap-1.5 font-medium",
+                          luhnOk ? "text-success" : "text-destructive",
+                        )}
+                      >
+                        {luhnOk ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                        {luhnOk ? t("verify.luhnValid") : t("verify.luhnInvalid")}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={!isComplete || !luhnOk || loading}
-              >
-                {loading ? <Loader2 className="animate-spin" /> : <Search />}
-                {t("verify.verifyButton")}
-              </Button>
+              <MotionTap className="w-full" disabled={!isComplete || !luhnOk || loading}>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={!isComplete || !luhnOk || loading}
+                >
+                  {loading ? <Loader2 className="animate-spin" /> : <Search />}
+                  {t("verify.verifyButton")}
+                </Button>
+              </MotionTap>
 
               {result && fromCache && !online && (
                 <Alert>
