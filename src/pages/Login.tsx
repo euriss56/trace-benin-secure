@@ -19,15 +19,24 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [invalid, setInvalid] = useState<{ email?: boolean; password?: boolean }>({});
 
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const nextInvalid = { email: !email, password: password.length < 6 };
+    if (nextInvalid.email || nextInvalid.password) {
+      setInvalid(nextInvalid);
+      setTimeout(() => setInvalid({}), 500);
+      return;
+    }
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) {
+      setInvalid({ email: true, password: true });
+      setTimeout(() => setInvalid({}), 500);
       toast({ title: t('auth.loginFailTitle'), description: error, variant: 'destructive' });
       return;
     }
