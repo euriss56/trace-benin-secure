@@ -75,7 +75,7 @@ export function MyDeclarationsView() {
                     <td className="py-2 pr-3 font-mono text-xs">{r.imei}</td>
                     <td className="py-2 pr-3">{r.quartier}</td>
                     <td className="py-2 pr-3">
-                      <Badge className={statusClass[r.status]}>{statusLabel[r.status]}</Badge>
+                      <Badge className={declarationStatusClass(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
                     </td>
                     <td className="py-2 pr-3 text-xs text-muted-foreground">
                       {new Date(r.created_at).toLocaleDateString(i18n.language)}
