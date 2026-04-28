@@ -66,40 +66,55 @@ export default function Login() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('auth.emailPlaceholder')}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t('auth.password')}</Label>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="text-xs text-primary hover:underline"
-                >
-                  {t('auth.forgotPassword')}
-                </button>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t('auth.loginLoading') : t('auth.loginSubmit')}
-            </Button>
+            <StaggerGroup className="space-y-4">
+              <StaggerItem className="space-y-2">
+                <Label htmlFor="email">{t('auth.email')}</Label>
+                <AnimatedInput
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  invalid={invalid.email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('auth.emailPlaceholder')}
+                />
+              </StaggerItem>
+              <StaggerItem className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">{t('auth.password')}</Label>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {t('auth.forgotPassword')}
+                  </button>
+                </div>
+                <AnimatedInput
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  invalid={invalid.password}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </StaggerItem>
+              <StaggerItem>
+                <MotionTap className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    <motion.span
+                      key={loading ? 'loading' : 'idle'}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      {loading ? t('auth.loginLoading') : t('auth.loginSubmit')}
+                    </motion.span>
+                  </Button>
+                </MotionTap>
+              </StaggerItem>
+            </StaggerGroup>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {t('auth.noAccount')}{' '}
