@@ -8,24 +8,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type { VerificationRow } from '@/lib/verification-history';
 import { useTranslation } from 'react-i18next';
+import { imeiStatusClass, imeiStatusLabel } from '@/lib/status-style';
 
 const LIMIT = 20;
 
 export function RecentVerifications() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<VerificationRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const statusLabel = (s: string) =>
-    s === 'legitimate' ? t('dashboard.history.statusLegitimate')
-    : s === 'suspect' ? t('dashboard.history.statusSuspect')
-    : t('dashboard.history.statusStolen');
-
-  const statusClass = (s: string) =>
-    s === 'legitimate' ? 'bg-success text-success-foreground'
-    : s === 'suspect' ? 'bg-warning text-warning-foreground'
-    : 'bg-destructive text-destructive-foreground';
+  // Garde-fou : enquêteur/admin n'ont pas d'historique IMEI personnel.
+  const blocked = role === 'enqueteur' || role === 'admin';
 
   useEffect(() => {
     if (!user || !isSupabaseConfigured) {

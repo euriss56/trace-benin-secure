@@ -64,7 +64,7 @@ export function HistoryView() {
                   <tr key={r.id} className="border-b last:border-0">
                     <td className="py-2 pr-3 font-mono text-xs">{r.imei}</td>
                     <td className="py-2 pr-3">
-                      <Badge className={statusClass(r.status)}>{statusLabel(r.status)}</Badge>
+                      <Badge className={imeiStatusClass(r.status)}>{imeiStatusLabel(t, r.status)}</Badge>
                     </td>
                     <td className="py-2 pr-3 tabular-nums">{r.score.toFixed(2)}</td>
                     <td className="py-2 pr-3 tabular-nums text-xs text-muted-foreground">{r.response_time_ms} ms</td>
