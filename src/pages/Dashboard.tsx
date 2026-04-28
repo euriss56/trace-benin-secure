@@ -33,7 +33,10 @@ export default function Dashboard() {
       <DashboardLayout>
         <Routes>
           <Route index element={<OverviewView />} />
-          <Route path="history" element={<HistoryView />} />
+          <Route
+            path="history"
+            element={role === 'enqueteur' || role === 'admin' ? <Navigate to="/dashboard" replace /> : <HistoryView />}
+          />
           <Route path="declarations" element={<MyDeclarationsView />} />
           <Route
             path="cases"

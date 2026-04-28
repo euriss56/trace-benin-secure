@@ -7,6 +7,7 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { declarationStatusClass, declarationStatusLabel, type DeclarationStatus } from '@/lib/status-style';
 
 interface DeclRow {
   id: string;
@@ -15,7 +16,7 @@ interface DeclRow {
   model: string;
   imei: string;
   quartier: string;
-  status: 'declared' | 'in_progress' | 'resolved';
+  status: DeclarationStatus;
   created_at: string;
 }
 
@@ -25,16 +26,7 @@ export function MyDeclarationsView() {
   const [rows, setRows] = useState<DeclRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const statusLabel: Record<DeclRow['status'], string> = {
-    declared: t('dashboard.cases.statusDeclared'),
-    in_progress: t('dashboard.cases.statusInProgress'),
-    resolved: t('dashboard.cases.statusResolved'),
-  };
-  const statusClass: Record<DeclRow['status'], string> = {
-    declared: 'bg-destructive text-destructive-foreground',
-    in_progress: 'bg-warning text-warning-foreground',
-    resolved: 'bg-success text-success-foreground',
-  };
+
 
   useEffect(() => {
     if (!user || !isSupabaseConfigured) { setLoading(false); return; }
@@ -83,7 +75,7 @@ export function MyDeclarationsView() {
                     <td className="py-2 pr-3 font-mono text-xs">{r.imei}</td>
                     <td className="py-2 pr-3">{r.quartier}</td>
                     <td className="py-2 pr-3">
-                      <Badge className={statusClass[r.status]}>{statusLabel[r.status]}</Badge>
+                      <Badge className={declarationStatusClass(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
                     </td>
                     <td className="py-2 pr-3 text-xs text-muted-foreground">
                       {new Date(r.created_at).toLocaleDateString(i18n.language)}
