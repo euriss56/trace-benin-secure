@@ -34,6 +34,15 @@ import { isValidLuhn, sanitizeImei } from "@/lib/luhn";
 import { COTONOU_QUARTIERS } from "@/lib/quartiers";
 import { generateDeclarationReference } from "@/lib/declaration-ref";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
+import { MotionTap, StaggerGroup, StaggerItem } from "@/components/motion/MotionPrimitives";
+
+const errorMotion = {
+  initial: { opacity: 0, y: -4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.18 },
+};
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/webp"];
