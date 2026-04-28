@@ -134,7 +134,7 @@ export function CasesView() {
                     <td className="py-2 pr-3">{r.brand} {r.model}</td>
                     <td className="py-2 pr-3">{r.quartier}</td>
                     <td className="py-2 pr-3">
-                      <Badge className={cls[r.status]}>{labels[r.status]}</Badge>
+                      <Badge className={declarationStatusClass(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
                     </td>
                     <td className="py-2 pr-3">
                       <Select value={r.status} onValueChange={(v) => updateStatus(r.id, v as Status)}>
