@@ -14,7 +14,16 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { InvestigatorCharts } from './InvestigatorCharts';
-import { declarationStatusClass, declarationStatusLabel, type DeclarationStatus } from '@/lib/status-style';
+import { declarationStatusVariant, declarationStatusLabel, type DeclarationStatus } from '@/lib/status-style';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeader,
+  DataTableHeaderCell,
+  DataTableRow,
+} from '@/components/ui/data-table';
+import { TableSkeleton } from '@/components/ui/loaders';
 
 type Status = DeclarationStatus;
 
@@ -37,8 +46,6 @@ export function CasesView() {
   const [rows, setRows] = useState<CaseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Status | 'all'>('all');
-
-
 
   const load = () => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
@@ -88,72 +95,68 @@ export function CasesView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <InvestigatorCharts />
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle>{t('dashboard.cases.title')}</CardTitle>
-        <div className="flex items-center gap-2">
-          <Select value={filter} onValueChange={(v) => setFilter(v as Status | 'all')}>
-            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('dashboard.cases.filterAll')}</SelectItem>
-              <SelectItem value="declared">{t('dashboard.cases.statusDeclared')}</SelectItem>
-              <SelectItem value="in_progress">{t('dashboard.cases.statusInProgress')}</SelectItem>
-              <SelectItem value="resolved">{t('dashboard.cases.statusResolved')}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={exportCsv} variant="outline" size="sm">
-            <Download className="mr-1 h-4 w-4" />CSV
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
-        ) : filtered.length === 0 ? (
-          <div className="text-sm text-muted-foreground">{t('dashboard.cases.empty')}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">{t('dashboard.cases.tableRef')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.cases.tableImei')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.cases.tableDevice')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.cases.tableQuartier')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.cases.tableStatus')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.cases.tableAction')}</th>
-                </tr>
-              </thead>
-              <tbody>
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle>{t('dashboard.cases.title')}</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={filter} onValueChange={(v) => setFilter(v as Status | 'all')}>
+              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('dashboard.cases.filterAll')}</SelectItem>
+                <SelectItem value="declared">{t('dashboard.cases.statusDeclared')}</SelectItem>
+                <SelectItem value="in_progress">{t('dashboard.cases.statusInProgress')}</SelectItem>
+                <SelectItem value="resolved">{t('dashboard.cases.statusResolved')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={exportCsv} variant="outline" size="sm">
+              <Download className="mr-1 h-4 w-4" />CSV
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <TableSkeleton rows={6} columns={6} />
+          ) : filtered.length === 0 ? (
+            <div className="text-sm text-muted-foreground">{t('dashboard.cases.empty')}</div>
+          ) : (
+            <DataTable>
+              <DataTableHeader>
+                <DataTableHeaderCell>{t('dashboard.cases.tableRef')}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t('dashboard.cases.tableImei')}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t('dashboard.cases.tableDevice')}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t('dashboard.cases.tableQuartier')}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t('dashboard.cases.tableStatus')}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t('dashboard.cases.tableAction')}</DataTableHeaderCell>
+              </DataTableHeader>
+              <DataTableBody>
                 {filtered.map((r) => (
-                  <tr key={r.id} className="border-b last:border-0">
-                    <td className="py-2 pr-3 font-mono text-xs">{r.reference}</td>
-                    <td className="py-2 pr-3 font-mono text-xs">{r.imei}</td>
-                    <td className="py-2 pr-3">{r.brand} {r.model}</td>
-                    <td className="py-2 pr-3">{r.quartier}</td>
-                    <td className="py-2 pr-3">
-                      <Badge className={declarationStatusClass(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
-                    </td>
-                    <td className="py-2 pr-3">
+                  <DataTableRow key={r.id}>
+                    <DataTableCell className="font-mono text-xs">{r.reference}</DataTableCell>
+                    <DataTableCell className="font-mono text-xs">{r.imei}</DataTableCell>
+                    <DataTableCell>{r.brand} {r.model}</DataTableCell>
+                    <DataTableCell>{r.quartier}</DataTableCell>
+                    <DataTableCell>
+                      <Badge variant={declarationStatusVariant(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
+                    </DataTableCell>
+                    <DataTableCell>
                       <Select value={r.status} onValueChange={(v) => updateStatus(r.id, v as Status)}>
-                        <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="declared">{t('dashboard.cases.statusDeclared')}</SelectItem>
                           <SelectItem value="in_progress">{t('dashboard.cases.statusInProgress')}</SelectItem>
                           <SelectItem value="resolved">{t('dashboard.cases.statusResolved')}</SelectItem>
                         </SelectContent>
                       </Select>
-                    </td>
-                  </tr>
+                    </DataTableCell>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              </DataTableBody>
+            </DataTable>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

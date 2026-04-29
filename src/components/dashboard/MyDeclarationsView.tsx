@@ -7,7 +7,16 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { declarationStatusClass, declarationStatusLabel, type DeclarationStatus } from '@/lib/status-style';
+import { declarationStatusVariant, declarationStatusLabel, type DeclarationStatus } from '@/lib/status-style';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeader,
+  DataTableHeaderCell,
+  DataTableRow,
+} from '@/components/ui/data-table';
+import { TableSkeleton } from '@/components/ui/loaders';
 
 interface DeclRow {
   id: string;
@@ -25,8 +34,6 @@ export function MyDeclarationsView() {
   const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<DeclRow[]>([]);
   const [loading, setLoading] = useState(true);
-
-
 
   useEffect(() => {
     if (!user || !isSupabaseConfigured) { setLoading(false); return; }
@@ -51,40 +58,36 @@ export function MyDeclarationsView() {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+          <TableSkeleton rows={5} columns={6} />
         ) : rows.length === 0 ? (
           <div className="text-sm text-muted-foreground">{t('dashboard.declarations.empty')}</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">{t('dashboard.declarations.tableRef')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.declarations.tableDevice')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.declarations.tableImei')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.declarations.tableQuartier')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.declarations.tableStatus')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.declarations.tableDate')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id} className="border-b last:border-0">
-                    <td className="py-2 pr-3 font-mono text-xs">{r.reference}</td>
-                    <td className="py-2 pr-3">{r.brand} {r.model}</td>
-                    <td className="py-2 pr-3 font-mono text-xs">{r.imei}</td>
-                    <td className="py-2 pr-3">{r.quartier}</td>
-                    <td className="py-2 pr-3">
-                      <Badge className={declarationStatusClass(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
-                    </td>
-                    <td className="py-2 pr-3 text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleDateString(i18n.language)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable>
+            <DataTableHeader>
+              <DataTableHeaderCell>{t('dashboard.declarations.tableRef')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.declarations.tableDevice')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.declarations.tableImei')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.declarations.tableQuartier')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.declarations.tableStatus')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.declarations.tableDate')}</DataTableHeaderCell>
+            </DataTableHeader>
+            <DataTableBody>
+              {rows.map((r) => (
+                <DataTableRow key={r.id}>
+                  <DataTableCell className="font-mono text-xs">{r.reference}</DataTableCell>
+                  <DataTableCell>{r.brand} {r.model}</DataTableCell>
+                  <DataTableCell className="font-mono text-xs">{r.imei}</DataTableCell>
+                  <DataTableCell>{r.quartier}</DataTableCell>
+                  <DataTableCell>
+                    <Badge variant={declarationStatusVariant(r.status)}>{declarationStatusLabel(t, r.status)}</Badge>
+                  </DataTableCell>
+                  <DataTableCell className="text-xs text-muted-foreground">
+                    {new Date(r.created_at).toLocaleDateString(i18n.language)}
+                  </DataTableCell>
+                </DataTableRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
         )}
       </CardContent>
     </Card>

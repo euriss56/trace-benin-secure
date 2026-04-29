@@ -14,6 +14,13 @@ const badgeVariants = cva(
         outline: "text-foreground",
         success: "border-transparent bg-success text-success-foreground hover:bg-success/80",
         warning: "border-transparent bg-warning text-warning-foreground hover:bg-warning/80",
+        // Status badges (IMEI / declarations) — soft tinted look
+        legitimate: "border-success/30 bg-success/15 text-success hover:bg-success/20",
+        suspect: "border-warning/30 bg-warning/15 text-warning hover:bg-warning/25",
+        stolen: "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/25",
+        declared: "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/25",
+        in_progress: "border-warning/30 bg-warning/15 text-warning hover:bg-warning/25",
+        resolved: "border-success/30 bg-success/15 text-success hover:bg-success/20",
       },
     },
     defaultVariants: {

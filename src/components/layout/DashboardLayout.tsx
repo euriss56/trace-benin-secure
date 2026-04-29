@@ -39,9 +39,9 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="container py-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[220px_1fr]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[240px_1fr]">
         <aside className="md:sticky md:top-20 md:self-start">
-          <nav className="rounded-lg border border-border bg-card p-2 space-y-1">
+          <nav className="rounded-2xl border border-border/70 bg-card p-2 shadow-soft space-y-0.5">
             {items.map((item) => {
               const Icon = item.icon;
               return (
@@ -51,21 +51,31 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
                   end={item.to === '/dashboard'}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      'group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-smooth',
                       isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-foreground/70 hover:bg-muted hover:text-foreground'
+                        ? 'bg-primary/10 text-primary shadow-sm'
+                        : 'text-foreground/70 hover:bg-muted hover:text-foreground hover:translate-x-0.5'
                     )
                   }
                 >
-                  <Icon className="h-4 w-4" />
-                  {t(item.labelKey)}
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <span
+                          aria-hidden
+                          className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary"
+                        />
+                      )}
+                      <Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" />
+                      <span className="truncate">{t(item.labelKey)}</span>
+                    </>
+                  )}
                 </NavLink>
               );
             })}
           </nav>
         </aside>
-        <main className="min-w-0">{children}</main>
+        <main className="min-w-0 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { MlMetricsWidget } from './MlMetricsWidget';
 import { pingMlApi } from '@/services/mlService';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { StatCardSkeleton } from '@/components/ui/loaders';
 
 interface Globals {
   totalUsers: number;
@@ -88,24 +89,34 @@ export function MetricsView() {
           Activité globale
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Kpi
-            icon={Users}
-            label={t('dashboard.metrics.users')}
-            value={loading ? '…' : g.totalUsers.toLocaleString('fr-FR')}
-            tone="primary"
-          />
-          <Kpi
-            icon={Search}
-            label={t('dashboard.metrics.verifications')}
-            value={loading ? '…' : g.totalVerifs.toLocaleString('fr-FR')}
-            tone="success"
-          />
-          <Kpi
-            icon={FileWarning}
-            label={t('dashboard.metrics.declarations')}
-            value={loading ? '…' : g.totalDecls.toLocaleString('fr-FR')}
-            tone="warning"
-          />
+          {loading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <Kpi
+                icon={Users}
+                label={t('dashboard.metrics.users')}
+                value={g.totalUsers.toLocaleString('fr-FR')}
+                tone="primary"
+              />
+              <Kpi
+                icon={Search}
+                label={t('dashboard.metrics.verifications')}
+                value={g.totalVerifs.toLocaleString('fr-FR')}
+                tone="success"
+              />
+              <Kpi
+                icon={FileWarning}
+                label={t('dashboard.metrics.declarations')}
+                value={g.totalDecls.toLocaleString('fr-FR')}
+                tone="warning"
+              />
+            </>
+          )}
         </div>
       </section>
 

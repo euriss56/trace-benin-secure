@@ -12,6 +12,15 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useAuth, type AppRole } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeader,
+  DataTableHeaderCell,
+  DataTableRow,
+} from '@/components/ui/data-table';
+import { TableSkeleton } from '@/components/ui/loaders';
 
 interface UserRoleRow {
   user_id: string;
@@ -55,48 +64,44 @@ export function UsersView() {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+          <TableSkeleton rows={5} columns={3} />
         ) : rows.length === 0 ? (
           <div className="text-sm text-muted-foreground">{t('dashboard.users.empty')}</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">{t('dashboard.users.tableUserId')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.users.tableCurrentRole')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.users.tableEdit')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.user_id} className="border-b last:border-0">
-                    <td className="py-2 pr-3 font-mono text-xs">
-                      {r.user_id}
-                      {r.user_id === me?.id && <Badge variant="outline" className="ml-2">{t('dashboard.users.you')}</Badge>}
-                    </td>
-                    <td className="py-2 pr-3">
-                      <Badge variant="secondary" className="uppercase tracking-wide">{r.role}</Badge>
-                    </td>
-                    <td className="py-2 pr-3">
-                      <Select
-                        value={r.role}
-                        onValueChange={(v) => changeRole(r.user_id, v as AppRole)}
-                        disabled={r.user_id === me?.id}
-                      >
-                        <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {ROLES.map((role) => (
-                            <SelectItem key={role} value={role}>{role}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable>
+            <DataTableHeader>
+              <DataTableHeaderCell>{t('dashboard.users.tableUserId')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.users.tableCurrentRole')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.users.tableEdit')}</DataTableHeaderCell>
+            </DataTableHeader>
+            <DataTableBody>
+              {rows.map((r) => (
+                <DataTableRow key={r.user_id}>
+                  <DataTableCell className="font-mono text-xs">
+                    <span className="break-all">{r.user_id}</span>
+                    {r.user_id === me?.id && <Badge variant="outline" className="ml-2">{t('dashboard.users.you')}</Badge>}
+                  </DataTableCell>
+                  <DataTableCell>
+                    <Badge variant="secondary" className="uppercase tracking-wide">{r.role}</Badge>
+                  </DataTableCell>
+                  <DataTableCell>
+                    <Select
+                      value={r.role}
+                      onValueChange={(v) => changeRole(r.user_id, v as AppRole)}
+                      disabled={r.user_id === me?.id}
+                    >
+                      <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role} value={role}>{role}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </DataTableCell>
+                </DataTableRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
         )}
         <p className="mt-3 text-xs text-muted-foreground">{t('dashboard.users.selfWarn')}</p>
       </CardContent>

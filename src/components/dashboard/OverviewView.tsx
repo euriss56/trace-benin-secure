@@ -7,6 +7,7 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { DealerCharts } from './DealerCharts';
 import { RecentVerifications } from './RecentVerifications';
+import { StatCardSkeleton } from '@/components/ui/loaders';
 
 const CERTIF_THRESHOLD = 20;
 
@@ -113,30 +114,41 @@ export function OverviewView() {
       )}
 
       <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={TrendingUp}
-          label={t('dashboard.overview.monthVerifs')}
-          value={loading ? '…' : stats.monthCount}
-          tone="success"
-        />
-        <StatCard
-          icon={History}
-          label={t('dashboard.overview.totalVerifs')}
-          value={loading ? '…' : stats.totalCount}
-          tone="info"
-        />
-        <StatCard
-          icon={Smartphone}
-          label={t('dashboard.overview.myDeclarations')}
-          value={loading ? '…' : stats.declarationCount}
-          tone="warning"
-        />
-        <StatCard
-          icon={ShieldCheck}
-          label={t('dashboard.overview.stolenHits')}
-          value={loading ? '…' : stats.stolenHits}
-          tone="danger"
-        />
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              icon={TrendingUp}
+              label={t('dashboard.overview.monthVerifs')}
+              value={stats.monthCount}
+              tone="success"
+            />
+            <StatCard
+              icon={History}
+              label={t('dashboard.overview.totalVerifs')}
+              value={stats.totalCount}
+              tone="info"
+            />
+            <StatCard
+              icon={Smartphone}
+              label={t('dashboard.overview.myDeclarations')}
+              value={stats.declarationCount}
+              tone="warning"
+            />
+            <StatCard
+              icon={ShieldCheck}
+              label={t('dashboard.overview.stolenHits')}
+              value={stats.stolenHits}
+              tone="danger"
+            />
+          </>
+        )}
       </div>
 
       {isPro && !certified && (

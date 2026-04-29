@@ -8,7 +8,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type { VerificationRow } from '@/lib/verification-history';
 import { useTranslation } from 'react-i18next';
-import { imeiStatusClass, imeiStatusLabel } from '@/lib/status-style';
+import { imeiStatusVariant, imeiStatusLabel } from '@/lib/status-style';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHeader,
+  DataTableHeaderCell,
+  DataTableRow,
+} from '@/components/ui/data-table';
+import { TableSkeleton } from '@/components/ui/loaders';
 
 const LIMIT = 20;
 
@@ -18,7 +27,6 @@ export function RecentVerifications() {
   const [rows, setRows] = useState<VerificationRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Garde-fou : enquêteur/admin n'ont pas d'historique IMEI personnel.
   const blocked = role === 'enqueteur' || role === 'admin';
 
   useEffect(() => {
@@ -77,7 +85,7 @@ export function RecentVerifications() {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+          <TableSkeleton rows={5} columns={4} />
         ) : rows.length === 0 ? (
           <div className="text-sm text-muted-foreground">
             {t('dashboard.history.empty')}{' '}
@@ -87,32 +95,28 @@ export function RecentVerifications() {
             .
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                  <th className="py-2 pr-3">{t('dashboard.history.tableImei')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.history.tableStatus')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.history.tableScore')}</th>
-                  <th className="py-2 pr-3">{t('dashboard.history.tableDate')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id} className="border-b last:border-0">
-                    <td className="py-2 pr-3 font-mono text-xs">{r.imei}</td>
-                    <td className="py-2 pr-3">
-                      <Badge className={imeiStatusClass(r.status)}>{imeiStatusLabel(t, r.status)}</Badge>
-                    </td>
-                    <td className="py-2 pr-3 tabular-nums">{r.score.toFixed(2)}</td>
-                    <td className="py-2 pr-3 text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleString(i18n.language)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable>
+            <DataTableHeader>
+              <DataTableHeaderCell>{t('dashboard.history.tableImei')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.history.tableStatus')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.history.tableScore')}</DataTableHeaderCell>
+              <DataTableHeaderCell>{t('dashboard.history.tableDate')}</DataTableHeaderCell>
+            </DataTableHeader>
+            <DataTableBody>
+              {rows.map((r) => (
+                <DataTableRow key={r.id}>
+                  <DataTableCell className="font-mono text-xs">{r.imei}</DataTableCell>
+                  <DataTableCell>
+                    <Badge variant={imeiStatusVariant(r.status)}>{imeiStatusLabel(t, r.status)}</Badge>
+                  </DataTableCell>
+                  <DataTableCell className="tabular-nums">{r.score.toFixed(2)}</DataTableCell>
+                  <DataTableCell className="text-xs text-muted-foreground">
+                    {new Date(r.created_at).toLocaleString(i18n.language)}
+                  </DataTableCell>
+                </DataTableRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
         )}
       </CardContent>
     </Card>
