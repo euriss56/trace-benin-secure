@@ -112,11 +112,31 @@ export function OverviewView() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={TrendingUp} label={t('dashboard.overview.monthVerifs')} value={loading ? '…' : stats.monthCount} />
-        <StatCard icon={History} label={t('dashboard.overview.totalVerifs')} value={loading ? '…' : stats.totalCount} />
-        <StatCard icon={Smartphone} label={t('dashboard.overview.myDeclarations')} value={loading ? '…' : stats.declarationCount} />
-        <StatCard icon={ShieldCheck} label={t('dashboard.overview.stolenHits')} value={loading ? '…' : stats.stolenHits} accent />
+      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={TrendingUp}
+          label={t('dashboard.overview.monthVerifs')}
+          value={loading ? '…' : stats.monthCount}
+          tone="success"
+        />
+        <StatCard
+          icon={History}
+          label={t('dashboard.overview.totalVerifs')}
+          value={loading ? '…' : stats.totalCount}
+          tone="info"
+        />
+        <StatCard
+          icon={Smartphone}
+          label={t('dashboard.overview.myDeclarations')}
+          value={loading ? '…' : stats.declarationCount}
+          tone="warning"
+        />
+        <StatCard
+          icon={ShieldCheck}
+          label={t('dashboard.overview.stolenHits')}
+          value={loading ? '…' : stats.stolenHits}
+          tone="danger"
+        />
       </div>
 
       {isPro && !certified && (
@@ -148,26 +168,41 @@ export function OverviewView() {
   );
 }
 
+type StatTone = 'info' | 'success' | 'warning' | 'danger';
+
+const TONE_STYLES: Record<StatTone, string> = {
+  info: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400',
+  success: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+  warning: 'bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400',
+  danger: 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400',
+};
+
 function StatCard({
   icon: Icon,
   label,
   value,
-  accent,
+  tone = 'info',
 }: {
   icon: typeof Award;
   label: string;
   value: number | string;
-  accent?: boolean;
+  tone?: StatTone;
 }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <Icon className={`h-5 w-5 ${accent ? 'text-destructive' : 'text-primary'}`} />
-          <span className="text-2xl font-bold tabular-nums">{value}</span>
+    <div className="group relative w-full overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight tabular-nums text-foreground">
+            {value}
+          </p>
         </div>
-        <div className="mt-2 text-xs text-muted-foreground">{label}</div>
-      </CardContent>
-    </Card>
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${TONE_STYLES[tone]}`}
+        >
+          <Icon className="h-6 w-6" strokeWidth={2.25} />
+        </div>
+      </div>
+    </div>
   );
 }
