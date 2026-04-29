@@ -1,16 +1,16 @@
 import type { TFunction } from 'i18next';
+import type { BadgeProps } from '@/components/ui/badge';
 
 /* =========================================================================
  * Statuts d'une vérification IMEI
- * Source unique pour libellés + classes Tailwind (badges, tableaux, etc.)
  * ========================================================================= */
 
 export type ImeiStatus = 'legitimate' | 'suspect' | 'stolen';
 
-export const IMEI_STATUS_CLASS: Record<ImeiStatus, string> = {
-  legitimate: 'bg-success text-success-foreground',
-  suspect: 'bg-warning text-warning-foreground',
-  stolen: 'bg-destructive text-destructive-foreground',
+const IMEI_STATUS_VARIANT: Record<ImeiStatus, NonNullable<BadgeProps['variant']>> = {
+  legitimate: 'legitimate',
+  suspect: 'suspect',
+  stolen: 'stolen',
 };
 
 export function imeiStatusLabel(t: TFunction, status: string): string {
@@ -25,10 +25,17 @@ export function imeiStatusLabel(t: TFunction, status: string): string {
   }
 }
 
+export function imeiStatusVariant(status: string): NonNullable<BadgeProps['variant']> {
+  if (status === 'legitimate') return IMEI_STATUS_VARIANT.legitimate;
+  if (status === 'suspect') return IMEI_STATUS_VARIANT.suspect;
+  return IMEI_STATUS_VARIANT.stolen;
+}
+
+/** @deprecated utilise <Badge variant={imeiStatusVariant(s)} /> */
 export function imeiStatusClass(status: string): string {
-  if (status === 'legitimate') return IMEI_STATUS_CLASS.legitimate;
-  if (status === 'suspect') return IMEI_STATUS_CLASS.suspect;
-  return IMEI_STATUS_CLASS.stolen;
+  if (status === 'legitimate') return 'bg-success/15 text-success border-success/30';
+  if (status === 'suspect') return 'bg-warning/15 text-warning border-warning/30';
+  return 'bg-destructive/15 text-destructive border-destructive/30';
 }
 
 /* =========================================================================
@@ -37,10 +44,10 @@ export function imeiStatusClass(status: string): string {
 
 export type DeclarationStatus = 'declared' | 'in_progress' | 'resolved';
 
-export const DECLARATION_STATUS_CLASS: Record<DeclarationStatus, string> = {
-  declared: 'bg-destructive text-destructive-foreground',
-  in_progress: 'bg-warning text-warning-foreground',
-  resolved: 'bg-success text-success-foreground',
+const DECLARATION_STATUS_VARIANT: Record<DeclarationStatus, NonNullable<BadgeProps['variant']>> = {
+  declared: 'declared',
+  in_progress: 'in_progress',
+  resolved: 'resolved',
 };
 
 export function declarationStatusLabel(t: TFunction, status: DeclarationStatus): string {
@@ -54,6 +61,13 @@ export function declarationStatusLabel(t: TFunction, status: DeclarationStatus):
   }
 }
 
+export function declarationStatusVariant(status: DeclarationStatus): NonNullable<BadgeProps['variant']> {
+  return DECLARATION_STATUS_VARIANT[status];
+}
+
+/** @deprecated utilise <Badge variant={declarationStatusVariant(s)} /> */
 export function declarationStatusClass(status: DeclarationStatus): string {
-  return DECLARATION_STATUS_CLASS[status];
+  if (status === 'declared') return 'bg-destructive/15 text-destructive border-destructive/30';
+  if (status === 'in_progress') return 'bg-warning/15 text-warning border-warning/30';
+  return 'bg-success/15 text-success border-success/30';
 }
