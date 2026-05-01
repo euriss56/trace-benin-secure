@@ -15,6 +15,7 @@ import { recordVerification } from "@/lib/verification-history";
 import { ResultDialog } from "@/components/verify/ResultDialog";
 import { CsvBatchVerify } from "@/components/verify/CsvBatchVerify";
 import { MlScoreCard } from "@/components/verify/MlScoreCard";
+import { IntelligentScoreCard } from "@/components/verify/IntelligentScoreCard";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { MotionTap } from "@/components/motion/MotionPrimitives";
@@ -217,6 +218,8 @@ export default function Verify() {
         </Card>
 
         <MlScoreCard imei={imei} enabled={isComplete && !!luhnOk} />
+
+        <IntelligentScoreCard imei={imei} enabled={isComplete && !!luhnOk} />
 
         <CsvBatchVerify />
 
