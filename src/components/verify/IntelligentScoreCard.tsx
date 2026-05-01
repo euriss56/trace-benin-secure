@@ -6,7 +6,7 @@ import {
   CheckCircle2,
   Smartphone,
   Globe2,
-  SimCard,
+  Signal,
   KeyRound,
   Activity,
   Clock,
@@ -211,7 +211,7 @@ export function IntelligentScoreCard({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <FeatureTile
-              icon={SimCard}
+              icon={Signal}
               label="Changements SIM"
               value={String(result.features.nbSimChanges)}
             />
