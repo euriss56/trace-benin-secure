@@ -9,14 +9,6 @@ import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type { VerificationRow } from '@/lib/verification-history';
 import { useTranslation } from 'react-i18next';
 import { imeiStatusVariant, imeiStatusLabel } from '@/lib/status-style';
-import {
-  DataTable,
-  DataTableBody,
-  DataTableCell,
-  DataTableHeader,
-  DataTableHeaderCell,
-  DataTableRow,
-} from '@/components/ui/data-table';
 import { TableSkeleton } from '@/components/ui/loaders';
 
 const LIMIT = 20;
@@ -31,10 +23,7 @@ export function RecentVerifications() {
 
   useEffect(() => {
     if (blocked) { setLoading(false); return; }
-    if (!user || !isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
+    if (!user || !isSupabaseConfigured) { setLoading(false); return; }
     let cancelled = false;
 
     const load = () => {
@@ -95,28 +84,58 @@ export function RecentVerifications() {
             .
           </div>
         ) : (
-          <DataTable>
-            <DataTableHeader>
-              <DataTableHeaderCell>{t('dashboard.history.tableImei')}</DataTableHeaderCell>
-              <DataTableHeaderCell>{t('dashboard.history.tableStatus')}</DataTableHeaderCell>
-              <DataTableHeaderCell>{t('dashboard.history.tableScore')}</DataTableHeaderCell>
-              <DataTableHeaderCell>{t('dashboard.history.tableDate')}</DataTableHeaderCell>
-            </DataTableHeader>
-            <DataTableBody>
+          <>
+            {/* Tableau desktop */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wide">
+                    <th className="pb-2 pr-4 font-medium">IMEI</th>
+                    <th className="pb-2 pr-4 font-medium">Statut</th>
+                    <th className="pb-2 pr-4 font-medium">Score</th>
+                    <th className="pb-2 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 pr-4 font-mono text-xs">{r.imei}</td>
+                      <td className="py-2.5 pr-4">
+                        <Badge variant={imeiStatusVariant(r.status)}>
+                          {imeiStatusLabel(t, r.status)}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 pr-4 tabular-nums">{r.score.toFixed(2)}</td>
+                      <td className="py-2.5 text-xs text-muted-foreground">
+                        {new Date(r.created_at).toLocaleString(i18n.language)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Cards mobile */}
+            <div className="flex flex-col gap-3 sm:hidden">
               {rows.map((r) => (
-                <DataTableRow key={r.id}>
-                  <DataTableCell className="font-mono text-xs">{r.imei}</DataTableCell>
-                  <DataTableCell>
-                    <Badge variant={imeiStatusVariant(r.status)}>{imeiStatusLabel(t, r.status)}</Badge>
-                  </DataTableCell>
-                  <DataTableCell className="tabular-nums">{r.score.toFixed(2)}</DataTableCell>
-                  <DataTableCell className="text-xs text-muted-foreground">
-                    {new Date(r.created_at).toLocaleString(i18n.language)}
-                  </DataTableCell>
-                </DataTableRow>
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-border bg-card p-3 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs text-foreground truncate">{r.imei}</span>
+                    <Badge variant={imeiStatusVariant(r.status)}>
+                      {imeiStatusLabel(t, r.status)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Score : <span className="tabular-nums font-semibold text-foreground">{r.score.toFixed(2)}</span></span>
+                    <span>{new Date(r.created_at).toLocaleString(i18n.language)}</span>
+                  </div>
+                </div>
               ))}
-            </DataTableBody>
-          </DataTable>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
