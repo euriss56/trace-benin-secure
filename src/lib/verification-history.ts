@@ -1,12 +1,6 @@
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import type { VerificationResult } from './verify-api';
 
-/**
- * Persiste une vérification IMEI pour l'utilisateur courant.
- * Reste silencieux si non connecté (préférence projet).
- * Les erreurs Supabase sont loggées en console pour faciliter le diagnostic
- * (typiquement un échec d'INSERT signifie une policy RLS manquante).
- */
 export async function recordVerification(
   result: VerificationResult,
 ): Promise<{ ok: boolean; error?: string }> {
@@ -17,6 +11,22 @@ export async function recordVerification(
   if (!user) {
     console.info('[recordVerification] utilisateur non connecté — vérification non sauvegardée');
     return { ok: false, error: 'not-authenticated' };
+  }
+
+  // Vérifier si une entrée récente existe déjà (moins d'1 heure)
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { data: existing } = await supabase
+    .from('verifications')
+    .select('id, created_at')
+    .eq('user_id', user.id)
+    .eq('imei', result.imei)
+    .gte('created_at', oneHourAgo)
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    console.info('[recordVerification] vérification ignorée — même IMEI vérifié il y a moins d\'1h');
+    return { ok: true };
   }
 
   const { error } = await supabase.from('verifications').insert({
@@ -34,6 +44,7 @@ export async function recordVerification(
     console.error('[recordVerification] échec INSERT verifications:', error.message, error);
     return { ok: false, error: error.message };
   }
+
   return { ok: true };
 }
 
