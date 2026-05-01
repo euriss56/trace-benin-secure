@@ -27,6 +27,7 @@ export default function Verify() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [fromCache, setFromCache] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const isComplete = imei.length === 15;
   const luhnOk = useMemo(() => (isComplete ? isValidLuhn(imei) : null), [imei, isComplete]);
@@ -50,6 +51,8 @@ export default function Verify() {
     if (!isComplete || !luhnOk) return;
 
     setLoading(true);
+    setSubmitted(true);
+
     try {
       if (!online) {
         const cached = await getCachedResult(imei);
@@ -145,7 +148,10 @@ export default function Verify() {
                     autoComplete="off"
                     placeholder={t("verify.imeiPlaceholder")}
                     value={imei}
-                    onChange={(e) => setImei(sanitizeImei(e.target.value))}
+                    onChange={(e) => {
+                      setImei(sanitizeImei(e.target.value));
+                      setSubmitted(false);
+                    }}
                     maxLength={15}
                     className={cn("font-mono text-lg tracking-widest h-12", borderState)}
                     aria-invalid={isComplete && !luhnOk}
@@ -204,9 +210,7 @@ export default function Verify() {
           </CardContent>
         </Card>
 
-        <MlScoreCard imei={imei} enabled={isComplete && !!luhnOk} />
-
-       
+        <MlScoreCard imei={imei} enabled={submitted && isComplete && !!luhnOk} />
 
         <CsvBatchVerify />
       </main>
