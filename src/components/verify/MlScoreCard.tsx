@@ -1,23 +1,34 @@
 import { useEffect, useState } from "react";
-import { Activity, AlertTriangle, CheckCircle2, Cpu, ListChecks, ShieldAlert, Smartphone, Timer, WifiOff } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Cpu,
+  ShieldAlert,
+  ShieldCheck,
+  WifiOff,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { checkIMEI, getMlAvailability, subscribeMlStatus, type MlResult, type Heuristic } from "@/services/mlService";
+import {
+  checkIMEI,
+  getMlAvailability,
+  subscribeMlStatus,
+  type MlResult,
+} from "@/services/mlService";
+import { isValidLuhn } from "@/lib/luhn";
 import { cn } from "@/lib/utils";
 
 interface MlScoreCardProps {
-  imei: string;          // IMEI complet (15 chiffres)
-  enabled: boolean;      // Lance le calcul quand passe à true
+  imei: string;
+  enabled: boolean;
 }
 
-/**
- * Carte affichant le score ML + fabricant + temps de réponse + statut API.
- * Barre tricolore : 0-50% vert, 50-80% orange, 80-100% rouge.
- */
 export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
   const [result, setResult] = useState<MlResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [animatedPct, setAnimatedPct] = useState(0);
   const [apiUp, setApiUp] = useState<boolean | null>(getMlAvailability());
 
   useEffect(() => subscribeMlStatus(setApiUp), []);
@@ -25,21 +36,40 @@ export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
   useEffect(() => {
     if (!enabled || imei.length !== 15) {
       setResult(null);
+      setAnimatedPct(0);
       return;
     }
     const ctrl = new AbortController();
     setLoading(true);
     checkIMEI(imei, ctrl.signal)
-      .then((r) => setResult(r))
-      .catch(() => { /* abort silencieux */ })
+      .then((r) => {
+        setResult(r);
+        setAnimatedPct(0);
+        requestAnimationFrame(() =>
+          setAnimatedPct(Math.round(Math.max(0, Math.min(1, r.score)) * 100))
+        );
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
     return () => ctrl.abort();
   }, [imei, enabled]);
 
   const degraded = apiUp === false;
 
+  const luhnOk = imei.length === 15 ? isValidLuhn(imei) : null;
+  const tac = imei.slice(0, 8);
+
   return (
-    <Card>
+    <Card className={cn(
+      "border-2 transition-colors",
+      result
+        ? result.status === "legitime"
+          ? "border-success/30 bg-success/5"
+          : result.status === "suspect"
+          ? "border-warning/30 bg-warning/5"
+          : "border-destructive/30 bg-destructive/5"
+        : ""
+    )}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
@@ -59,13 +89,14 @@ export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+
+      <CardContent className="space-y-5">
         {degraded && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Mode dégradé — ML indisponible</AlertTitle>
             <AlertDescription>
-              Score calculé localement (Luhn + heuristiques). Précision réduite par rapport au modèle complet.
+              Score calculé localement. Précision réduite.
             </AlertDescription>
           </Alert>
         )}
@@ -83,47 +114,104 @@ export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
           </div>
         )}
 
-        {result && <ScoreDisplay result={result} />}
+        {result && (
+          <ResultDisplay
+            result={result}
+            animatedPct={animatedPct}
+            luhnOk={luhnOk}
+            tac={tac}
+          />
+        )}
       </CardContent>
     </Card>
   );
 }
 
-function ScoreDisplay({ result }: { result: MlResult }) {
-  // Score garanti dans [0,1] (clamp défensif côté UI)
+function ResultDisplay({
+  result,
+  animatedPct,
+  luhnOk,
+  tac,
+}: {
+  result: MlResult;
+  animatedPct: number;
+  luhnOk: boolean | null;
+  tac: string;
+}) {
   const safeScore = Math.max(0, Math.min(1, Number.isFinite(result.score) ? result.score : 0.5));
-  const pct = Math.round(safeScore * 100);
-  // Couleurs : 0-50% vert, 50-80% orange, 80-100% rouge
-  const color =
-    pct < 50 ? "bg-success" : pct < 80 ? "bg-warning" : "bg-destructive";
-  const textColor =
-    pct < 50 ? "text-success" : pct < 80 ? "text-warning" : "text-destructive";
+  const pct = animatedPct;
 
-  const StatusIcon =
-    result.status === "legitime" ? CheckCircle2
-    : result.status === "suspect" ? AlertTriangle
-    : ShieldAlert;
+  const tone = {
+    legitime: {
+      text: "text-success",
+      bar: "bg-success",
+      icon: ShieldCheck,
+      label: "Légitime",
+    },
+    suspect: {
+      text: "text-warning",
+      bar: "bg-warning",
+      icon: AlertTriangle,
+      label: "Suspect",
+    },
+    vole: {
+      text: "text-destructive",
+      bar: "bg-destructive",
+      icon: ShieldAlert,
+      label: "Volé",
+    },
+  }[result.status] ?? {
+    text: "text-success",
+    bar: "bg-success",
+    icon: ShieldCheck,
+    label: "Légitime",
+  };
 
-  const statusLabel =
-    result.status === "legitime" ? "Légitime"
-    : result.status === "suspect" ? "Suspect"
-    : "Volé";
+  const Icon = tone.icon;
 
-  const heuristics = (result.details?.heuristics as Heuristic[] | undefined) ?? [];
-  const isFallback = result.source === "fallback";
+  const details = [
+    {
+      ok: luhnOk === true,
+      text: luhnOk ? "Format IMEI valide (Luhn OK)" : "Format IMEI invalide (Luhn KO)",
+    },
+    {
+      ok: result.status !== "vole",
+      text: result.status === "vole" ? "Appareil signalé volé" : "Appareil non blacklisté",
+    },
+    {
+      ok: result.status === "legitime",
+      text: result.status === "legitime" ? "Activité normale" : "Activité anormale détectée",
+    },
+    {
+      ok: result.manufacturer !== "Inconnu",
+      text: result.manufacturer !== "Inconnu"
+        ? `TAC reconnu — ${result.manufacturer}`
+        : "TAC inconnu — fabricant non identifié",
+    },
+  ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Label principal */}
       <div className="flex items-center gap-3">
-        <StatusIcon className={cn("h-8 w-8", textColor)} strokeWidth={2.25} />
+        <div className={cn(
+          "flex h-12 w-12 items-center justify-center rounded-full",
+          result.status === "legitime" ? "bg-success/10 ring-1 ring-success/30"
+          : result.status === "suspect" ? "bg-warning/10 ring-1 ring-warning/30"
+          : "bg-destructive/10 ring-1 ring-destructive/30"
+        )}>
+          <Icon className={cn("h-6 w-6", tone.text)} strokeWidth={2.25} />
+        </div>
         <div>
-          <div className={cn("text-xl font-bold", textColor)}>{statusLabel}</div>
+          <div className={cn("text-xl font-bold", tone.text)}>{tone.label}</div>
           <div className="text-xs text-muted-foreground">
-            Score de risque : <span className="font-mono font-semibold">{safeScore.toFixed(2)}</span> / 1.00
+            Score de risque :{" "}
+            <span className="font-mono font-semibold">{safeScore.toFixed(2)}</span> / 1.00
           </div>
         </div>
       </div>
 
+      {/* Barre de score */}
       <div>
         <div className="flex items-center justify-between text-xs mb-1.5 text-muted-foreground">
           <span>Score ML</span>
@@ -131,7 +219,7 @@ function ScoreDisplay({ result }: { result: MlResult }) {
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className={cn("h-full transition-all duration-500", color)}
+            className={cn("h-full transition-[width] duration-700 ease-out", tone.bar)}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -142,101 +230,32 @@ function ScoreDisplay({ result }: { result: MlResult }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-md border bg-card p-3">
-          <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-1">
-            <Smartphone className="h-3.5 w-3.5" /> Fabricant
-          </div>
-          <div className="font-semibold leading-tight">{result.manufacturer}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">{result.model_series}</div>
+      {/* Détails */}
+      <section>
+        <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          Détails
         </div>
-        <div className="rounded-md border bg-card p-3">
-          <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-1">
-            <Timer className="h-3.5 w-3.5" /> Temps de réponse
-          </div>
-          <div className="font-mono font-semibold">{result.response_time_ms} ms</div>
-          <div className="text-xs text-muted-foreground mt-0.5">
-            Source : {result.source === "api" ? "API ML" : "fallback local"}
-          </div>
-        </div>
-      </div>
-
-      {isFallback && heuristics.length > 0 && (
-        <HeuristicsPanel heuristics={heuristics} />
-      )}
-    </div>
-  );
-}
-
-function HeuristicsPanel({ heuristics }: { heuristics: Heuristic[] }) {
-  const triggered = heuristics.filter((h) => h.triggered);
-  const ok = heuristics.filter((h) => !h.triggered);
-
-  return (
-    <div className="rounded-md border bg-muted/30 p-3 space-y-3">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <ListChecks className="h-4 w-4 text-primary" />
-        Heuristiques appliquées (mode dégradé)
-      </div>
-      <p className="text-xs text-muted-foreground -mt-1">
-        Score calculé localement. La valeur retenue est le poids le plus élevé
-        parmi les règles déclenchées (baseline 0.10), garantie entre 0.00 et 1.00.
-      </p>
-
-      {triggered.length > 0 ? (
-        <div className="space-y-1.5">
-          <div className="text-[11px] uppercase tracking-wide text-destructive font-semibold">
-            Règles déclenchées ({triggered.length})
-          </div>
-          {triggered.map((h) => (
-            <HeuristicRow key={h.id} h={h} />
+        <ul className="space-y-1.5">
+          {details.map((d, i) => (
+            <li
+              key={i}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs border",
+                d.ok
+                  ? "bg-success/5 border-success/20"
+                  : "bg-destructive/5 border-destructive/20"
+              )}
+            >
+              {d.ok
+                ? <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                : <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+              }
+              <span>{d.text}</span>
+            </li>
           ))}
-        </div>
-      ) : (
-        <div className="text-xs text-success font-medium flex items-center gap-1.5">
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          Aucune anomalie locale détectée
-        </div>
-      )}
-
-      {ok.length > 0 && (
-        <details className="group">
-          <summary className="cursor-pointer text-[11px] uppercase tracking-wide text-muted-foreground font-semibold hover:text-foreground transition-colors">
-            Règles vérifiées et conformes ({ok.length})
-          </summary>
-          <div className="mt-2 space-y-1.5">
-            {ok.map((h) => (
-              <HeuristicRow key={h.id} h={h} />
-            ))}
-          </div>
-        </details>
-      )}
-    </div>
-  );
-}
-
-function HeuristicRow({ h }: { h: Heuristic }) {
-  return (
-    <div
-      className={cn(
-        "flex items-start gap-2 rounded-sm px-2 py-1.5 text-xs",
-        h.triggered ? "bg-destructive/5 border border-destructive/20" : "bg-card border"
-      )}
-    >
-      {h.triggered ? (
-        <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
-      ) : (
-        <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-medium">{h.label}</span>
-          <span className="font-mono text-[10px] text-muted-foreground shrink-0">
-            poids {h.weight.toFixed(2)}
-          </span>
-        </div>
-        <div className="text-muted-foreground mt-0.5 leading-snug">{h.description}</div>
-      </div>
+        </ul>
+      </section>
     </div>
   );
 }
