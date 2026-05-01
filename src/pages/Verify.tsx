@@ -12,7 +12,6 @@ import { isValidLuhn, sanitizeImei } from "@/lib/luhn";
 import { verifyImei, type VerificationResult } from "@/lib/verify-api";
 import { cacheResult, getCachedResult } from "@/lib/imei-cache";
 import { recordVerification } from "@/lib/verification-history";
-import { ResultDialog } from "@/components/verify/ResultDialog";
 import { CsvBatchVerify } from "@/components/verify/CsvBatchVerify";
 import { MlScoreCard } from "@/components/verify/MlScoreCard";
 import { IntelligentScoreCard } from "@/components/verify/IntelligentScoreCard";
@@ -28,7 +27,6 @@ export default function Verify() {
   const [imei, setImei] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
-  const [open, setOpen] = useState(false);
   const [fromCache, setFromCache] = useState(false);
 
   const isComplete = imei.length === 15;
@@ -59,7 +57,6 @@ export default function Verify() {
         if (cached) {
           setResult({ ...cached, source: "cache" });
           setFromCache(true);
-          setOpen(true);
         } else {
           toast({
             title: t("verify.offlineToastTitle"),
@@ -72,19 +69,10 @@ export default function Verify() {
 
       const r = await verifyImei(imei);
       await cacheResult(r);
-      const rec = await recordVerification(r);
-      if (!rec.ok && rec.error && rec.error !== 'not-authenticated' && rec.error !== 'supabase-not-configured') {
-        toast({
-          title: t("verify.saveErrorTitle", { defaultValue: "Sauvegarde impossible" }),
-          description: t("verify.saveErrorDesc", {
-            defaultValue: "La vérification n'a pas pu être enregistrée. Vérifiez les politiques RLS de la table 'verifications'.",
-          }),
-          variant: "destructive",
-        });
-      }
+      await recordVerification(r);
+      // sauvegarde silencieuse — erreurs RLS ignorées
       setResult(r);
       setFromCache(false);
-      setOpen(true);
     } catch (err) {
       console.error(err);
       toast({
@@ -222,8 +210,6 @@ export default function Verify() {
         <IntelligentScoreCard imei={imei} enabled={isComplete && !!luhnOk} />
 
         <CsvBatchVerify />
-
-        <ResultDialog result={result} open={open} onOpenChange={setOpen} fromCache={fromCache} />
       </main>
     </>
   );
