@@ -44,7 +44,6 @@ export function Navbar() {
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);
 
-  // Fermer le menu mobile au changement de route
   useEffect(() => {
     setMobileOpen(false);
   }, []);
@@ -60,8 +59,8 @@ export function Navbar() {
 
   const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'block px-4 py-3 text-base font-medium border-b border-border transition-colors hover:text-primary hover:bg-accent',
-      isActive ? 'text-primary' : 'text-foreground/70'
+      'block px-4 py-3 text-base font-medium border-b border-border transition-colors hover:text-primary hover:bg-primary/10',
+      isActive ? 'text-primary bg-primary/5' : 'text-foreground/70'
     );
 
   return (
@@ -161,110 +160,4 @@ export function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link to="/dashboard">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
-                        {t('nav.dashboard')}
-                      </Link>
-                    </DropdownMenuItem>
-                    {canSeeMap && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/map">
-                          <MapIcon className="mr-2 h-4 w-4" />
-                          {t('nav.map')}
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      {t('nav.logout')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-
-            {/* Hamburger mobile */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label="Menu"
-            >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Menu mobile déroulant */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-background">
-            <nav className="flex flex-col">
-              <NavLink to="/" end className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                {t('nav.home')}
-              </NavLink>
-              <NavLink to="/verify" className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                {t('nav.verify')}
-              </NavLink>
-              {user && (
-                <NavLink to="/declare" className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                  {t('nav.declare')}
-                </NavLink>
-              )}
-              {canSeeMap && (
-                <NavLink to="/map" className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                  {t('nav.map')}
-                </NavLink>
-              )}
-              <NavLink to="/contacts-police" className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                <span className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Contacts Police
-                </span>
-              </NavLink>
-              <NavLink to="/privacy" className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                {t('nav.privacy')}
-              </NavLink>
-
-              {/* Auth mobile */}
-              <div className="p-4 border-t border-border">
-                {!user ? (
-                  <div className="flex flex-col gap-2">
-                    <Button asChild variant="outline" className="w-full">
-                      <Link to="/login" onClick={() => setMobileOpen(false)}>{t('nav.login')}</Link>
-                    </Button>
-                    <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                      <Link to="/register" onClick={() => setMobileOpen(false)}>{t('nav.register')}</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="text-xs text-muted-foreground">{user.email}</div>
-                    <div className="text-xs uppercase tracking-wide text-primary font-semibold">
-                      {role ?? 'particulier'}
-                    </div>
-                    <div className="flex flex-col gap-2 pt-2">
-                      <Button asChild variant="outline" className="w-full justify-start">
-                        <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          {t('nav.dashboard')}
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-destructive hover:text-destructive"
-                        onClick={() => { signOut(); setMobileOpen(false); }}
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        {t('nav.logout')}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </nav>
-          </div>
-        )}
-      </header>
-    </>
-  );
-}
+                        {t('nav.das
