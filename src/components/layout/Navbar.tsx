@@ -160,4 +160,4 @@ export function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link to="/dashboard">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
-                        {t('nav.das
+                      {t('nav.dashboard')}
