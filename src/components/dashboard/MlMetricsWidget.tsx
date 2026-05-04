@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { getMlAvailability, pingMlApi, subscribeMlStatus } from "@/services/mlService";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Stats {
   count: number;
@@ -180,7 +181,17 @@ export function MlMetricsWidget() {
       </CardHeader>
       <CardContent className="space-y-5">
         {loading ? (
-          <div className="text-sm text-muted-foreground">Chargement des métriques…</div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-md border p-3 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-7 w-16" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              ))}
+            </div>
+          </div>
         ) : !stats || stats.count === 0 ? (
           <EmptyState />
         ) : (
