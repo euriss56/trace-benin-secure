@@ -158,7 +158,7 @@ export function DealerCharts() {
         </CardHeader>
         <CardContent className="h-[300px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={300} />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={daily} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -189,7 +189,7 @@ export function DealerCharts() {
         </CardHeader>
         <CardContent className="h-[300px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={300} />
           ) : totalAll === 0 ? (
             <div className="text-sm text-muted-foreground">{t('dashboard.charts.empty')}</div>
           ) : (

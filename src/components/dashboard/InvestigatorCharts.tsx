@@ -153,7 +153,7 @@ export function InvestigatorCharts() {
         </CardHeader>
         <CardContent className="h-[360px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={340} />
           ) : byQuartier.length === 0 ? (
             <div className="text-sm text-muted-foreground">{t('dashboard.charts.empty')}</div>
           ) : (
@@ -188,7 +188,7 @@ export function InvestigatorCharts() {
         </CardHeader>
         <CardContent className="h-[360px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={340} />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthly} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
