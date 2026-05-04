@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { ChartSkeleton } from '@/components/ui/loaders';
 
 const BLUE_DARK = '#1A3A6B';
 const BLUE_LIGHT = '#4A90D9';
@@ -152,7 +153,7 @@ export function InvestigatorCharts() {
         </CardHeader>
         <CardContent className="h-[360px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={340} />
           ) : byQuartier.length === 0 ? (
             <div className="text-sm text-muted-foreground">{t('dashboard.charts.empty')}</div>
           ) : (
@@ -187,7 +188,7 @@ export function InvestigatorCharts() {
         </CardHeader>
         <CardContent className="h-[360px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={340} />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthly} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>

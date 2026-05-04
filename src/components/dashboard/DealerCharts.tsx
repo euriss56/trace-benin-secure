@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { ChartSkeleton } from '@/components/ui/loaders';
 
 const COLOR_LEGIT = '#22c55e';
 const COLOR_SUSPECT = '#f97316';
@@ -157,7 +158,7 @@ export function DealerCharts() {
         </CardHeader>
         <CardContent className="h-[300px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={300} />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={daily} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -188,7 +189,7 @@ export function DealerCharts() {
         </CardHeader>
         <CardContent className="h-[300px]">
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <ChartSkeleton height={300} />
           ) : totalAll === 0 ? (
             <div className="text-sm text-muted-foreground">{t('dashboard.charts.empty')}</div>
           ) : (

@@ -100,9 +100,9 @@ export function CasesView() {
       <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>{t('dashboard.cases.title')}</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             <Select value={filter} onValueChange={(v) => setFilter(v as Status | 'all')}>
-              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[180px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('dashboard.cases.filterAll')}</SelectItem>
                 <SelectItem value="declared">{t('dashboard.cases.statusDeclared')}</SelectItem>
@@ -110,7 +110,7 @@ export function CasesView() {
                 <SelectItem value="resolved">{t('dashboard.cases.statusResolved')}</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={exportCsv} variant="outline" size="sm">
+            <Button onClick={exportCsv} variant="outline" size="sm" className="w-full sm:w-auto">
               <Download className="mr-1 h-4 w-4" />CSV
             </Button>
           </div>
@@ -142,7 +142,7 @@ export function CasesView() {
                     </DataTableCell>
                     <DataTableCell>
                       <Select value={r.status} onValueChange={(v) => updateStatus(r.id, v as Status)}>
-                        <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 w-full min-w-[140px] text-xs sm:w-[150px]"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="declared">{t('dashboard.cases.statusDeclared')}</SelectItem>
                           <SelectItem value="in_progress">{t('dashboard.cases.statusInProgress')}</SelectItem>
