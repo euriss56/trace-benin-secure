@@ -47,6 +47,29 @@ export function TableSkeleton({
   );
 }
 
+/** Skeleton pour un graphique (chart). */
+export function ChartSkeleton({ height = 300 }: { height?: number }) {
+  return (
+    <div
+      className="w-full rounded-xl border border-border/70 bg-card p-4"
+      style={{ height }}
+    >
+      <div className="flex h-full flex-col gap-3">
+        <Skeleton className="h-3 w-32" />
+        <div className="flex flex-1 items-end gap-2">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              className="flex-1 rounded-md"
+              style={{ height: `${30 + ((i * 53) % 70)}%` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Bloc skeleton générique : titre + corps. */
 export function CardBlockSkeleton({ lines = 3 }: { lines?: number }) {
   return (

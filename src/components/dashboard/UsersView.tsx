@@ -77,9 +77,9 @@ export function UsersView() {
             <DataTableBody>
               {rows.map((r) => (
                 <DataTableRow key={r.user_id}>
-                  <DataTableCell className="font-mono text-xs">
-                    <span className="break-all">{r.user_id}</span>
-                    {r.user_id === me?.id && <Badge variant="outline" className="ml-2">{t('dashboard.users.you')}</Badge>}
+                  <DataTableCell className="max-w-[160px] font-mono text-xs sm:max-w-none">
+                    <span className="block break-all">{r.user_id}</span>
+                    {r.user_id === me?.id && <Badge variant="outline" className="mt-1">{t('dashboard.users.you')}</Badge>}
                   </DataTableCell>
                   <DataTableCell>
                     <Badge variant="secondary" className="uppercase tracking-wide">{r.role}</Badge>
@@ -90,7 +90,7 @@ export function UsersView() {
                       onValueChange={(v) => changeRole(r.user_id, v as AppRole)}
                       disabled={r.user_id === me?.id}
                     >
-                      <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-8 w-full min-w-[140px] text-xs sm:w-[160px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {ROLES.map((role) => (
                           <SelectItem key={role} value={role}>{role}</SelectItem>
