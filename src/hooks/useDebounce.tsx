@@ -1,0 +1,11 @@
+import { useEffect, useState } from 'react';
+
+/** Renvoie `value` après `delay` ms sans nouveau changement. Évite les re-fetch/re-filter en cascade. */
+export function useDebounce<T>(value: T, delay = 250): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
