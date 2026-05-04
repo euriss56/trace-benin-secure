@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { ChartSkeleton } from '@/components/ui/loaders';
 
 const COLOR_LEGIT = '#22c55e';
 const COLOR_SUSPECT = '#f97316';

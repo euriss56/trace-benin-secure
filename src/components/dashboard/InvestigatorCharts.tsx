@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { ChartSkeleton } from '@/components/ui/loaders';
 
 const BLUE_DARK = '#1A3A6B';
 const BLUE_LIGHT = '#4A90D9';
