@@ -213,9 +213,9 @@ export default function MapPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden isolate relative z-0">
           <CardContent className="p-0">
-            <div className="h-[60vh] w-full">
+            <div className="h-[60vh] w-full relative z-0">
               <MapContainer
                 center={COTONOU_CENTER}
                 zoom={13}
