@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Shield, LogOut, Map as MapIcon, LayoutDashboard, Moon, Sun, Languages, Phone, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +20,7 @@ export function Navbar() {
   const { t, i18n } = useTranslation();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const stored = localStorage.getItem('tib-theme') as 'light' | 'dark' | null;
@@ -44,9 +45,21 @@ export function Navbar() {
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);
 
+  // Close mobile menu whenever the route changes
   useEffect(() => {
     setMobileOpen(false);
-  }, []);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [mobileOpen]);
 
   const currentLang = SUPPORTED_LANGS.find((l) => l.code === i18n.resolvedLanguage) ?? SUPPORTED_LANGS[0];
   const canSeeMap = role === 'enqueteur' || role === 'admin';
@@ -193,10 +206,11 @@ export function Navbar() {
             </Button>
           </div>
         </div>
+      </header>
 
-        {/* Menu mobile déroulant */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-background fixed top-16 left-0 right-0 bottom-0 z-50 overflow-y-auto">
+      {/* Menu mobile déroulant — rendu hors du header sticky pour éviter les bugs de stacking */}
+      {mobileOpen && (
+        <div className="md:hidden bg-background fixed inset-x-0 top-16 bottom-0 z-[60] overflow-y-auto border-t border-border">
             <nav className="flex flex-col">
               <NavLink to="/" end className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
                 {t('nav.home')}
@@ -260,10 +274,9 @@ export function Navbar() {
                   </div>
                 )}
               </div>
-            </nav>
-          </div>
-        )}
-      </header>
+          </nav>
+        </div>
+      )}
     </>
   );
 }
