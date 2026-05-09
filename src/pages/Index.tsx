@@ -8,6 +8,7 @@ import {
   Store,
   Wrench,
   Scale,
+  User,
   Lock,
   Brain,
   Database,
@@ -64,7 +65,7 @@ export default function Index() {
     { icon: Store, title: t('home.actors.dealerTitle'), desc: t('home.actors.dealerDesc'), to: '/register' },
     { icon: Wrench, title: t('home.actors.repairTitle'), desc: t('home.actors.repairDesc'), to: '/register' },
     { icon: Scale, title: t('home.actors.policeTitle'), desc: t('home.actors.policeDesc'), to: '/register' },
-    { icon: Shield, title: t('home.badge'), desc: t('home.subtitle'), to: '/verify' },
+    { icon: User, title: 'Particulier', desc: "Vérifiez l'IMEI d'un téléphone avant achat ou après un vol. Protégez-vous en quelques secondes.", to: '/verify' },
   ];
 
   const features = [

@@ -38,7 +38,7 @@
   },
   "home": {
     "badge": "Authenticate · Protect · Trace",
-    "titlePrefix": "TraceIMEI-BJ —",
+    "titlePrefix": "TraceIMEI-BJ",
     "titleHighlight": "Protect your phones",
     "subtitle": "Benin's first ML-powered platform to track stolen phones. Built for dealers, repair shops and law enforcement.",
     "ctaVerify": "Verify an IMEI for free",
