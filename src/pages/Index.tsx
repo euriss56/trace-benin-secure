@@ -62,10 +62,10 @@ export default function Index() {
   ];
 
   const actors = [
-    { icon: Store, title: t('home.actors.dealerTitle'), desc: t('home.actors.dealerDesc'), to: '/register' },
-    { icon: Wrench, title: t('home.actors.repairTitle'), desc: t('home.actors.repairDesc'), to: '/register' },
-    { icon: Scale, title: t('home.actors.policeTitle'), desc: t('home.actors.policeDesc'), to: '/register' },
-    { icon: User, title: 'Particulier', desc: "Vérifiez l'IMEI d'un téléphone avant achat ou après un vol. Protégez-vous en quelques secondes.", to: '/verify' },
+    { icon: Store, title: t('home.actors.dealerTitle'), desc: t('home.actors.dealerDesc'), to: '/verify', linkText: 'Vérifier un IMEI' },
+    { icon: Wrench, title: t('home.actors.repairTitle'), desc: t('home.actors.repairDesc'), to: '/verify', linkText: 'Vérifier un IMEI' },
+    { icon: Scale, title: t('home.actors.policeTitle'), desc: t('home.actors.policeDesc'), to: '/contacts-police', linkText: 'Voir les contacts' },
+    { icon: User, title: 'Particulier', desc: "Vérifiez l'IMEI d'un téléphone avant achat ou après un vol. Protégez-vous en quelques secondes.", to: '/verify', linkText: 'Vérifier maintenant' },
   ];
 
   const features = [
@@ -221,14 +221,6 @@ export default function Index() {
                   key={step.title}
                   className="relative overflow-hidden border-border/60 bg-card"
                 >
-                  {/* Big background number */}
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -right-2 -top-4 select-none text-[110px] font-extrabold leading-none text-primary/5"
-                  >
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-
                   <CardContent className="relative p-6">
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-elegant">
                       <step.icon className="h-6 w-6" />
@@ -274,7 +266,7 @@ export default function Index() {
                     to={a.to}
                     className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary story-link"
                   >
-                    En savoir plus
+                    {a.linkText}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </CardContent>
