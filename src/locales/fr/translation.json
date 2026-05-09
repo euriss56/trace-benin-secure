@@ -38,7 +38,7 @@
   },
   "home": {
     "badge": "Authentifier · Protéger · Tracer",
-    "titlePrefix": "TraceIMEI-BJ —",
+    "titlePrefix": "TraceIMEI-BJ",
     "titleHighlight": "Protégez vos téléphones",
     "subtitle": "La première plateforme ML pour traquer les téléphones volés au Bénin. Pour les dealers, ateliers de réparation et forces de l'ordre.",
     "ctaVerify": "Vérifier un IMEI gratuitement",
