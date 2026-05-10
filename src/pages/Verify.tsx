@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, Loader2, WifiOff, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { Search, Loader2, WifiOff, ShieldCheck, CheckCircle2, XCircle, Camera, X as XIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
+  Camera,
   CheckCircle2,
   Cpu,
   ShieldAlert,
