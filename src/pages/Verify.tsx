@@ -167,6 +167,8 @@ export default function Verify() {
                     onChange={(e) => {
                       setImei(sanitizeImei(e.target.value));
                       setSubmitted(false);
+                      setPhotoFile(null);
+                      setPhotoPreview(null);
                     }}
                     maxLength={15}
                     className={cn("font-mono text-lg tracking-widest h-12", borderState)}
