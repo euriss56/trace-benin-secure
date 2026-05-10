@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, Loader2, WifiOff, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { Search, Loader2, WifiOff, ShieldCheck, CheckCircle2, XCircle, Camera, X as XIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,8 @@ export default function Verify() {
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [fromCache, setFromCache] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const isComplete = imei.length === 15;
   const luhnOk = useMemo(() => (isComplete ? isValidLuhn(imei) : null), [imei, isComplete]);
@@ -93,6 +95,20 @@ export default function Verify() {
       ? "border-success focus-visible:ring-success"
       : "border-destructive focus-visible:ring-destructive";
 
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function removePhoto() {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  }
+
   return (
     <>
       <Helmet>
@@ -151,6 +167,8 @@ export default function Verify() {
                     onChange={(e) => {
                       setImei(sanitizeImei(e.target.value));
                       setSubmitted(false);
+                      setPhotoFile(null);
+                      setPhotoPreview(null);
                     }}
                     maxLength={15}
                     className={cn("font-mono text-lg tracking-widest h-12", borderState)}
@@ -179,6 +197,45 @@ export default function Verify() {
                     )}
                   </AnimatePresence>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="photo" className="flex items-center gap-2">
+                  <Camera className="h-4 w-4 text-primary" />
+                  Photo de l'appareil
+                  <span className="text-xs text-muted-foreground font-normal">(optionnel)</span>
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ajoutez une photo pour activer l'analyse visuelle de cohérence modèle
+                </p>
+                {!photoPreview ? (
+                  <label
+                    htmlFor="photo"
+                    className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                  >
+                    <Camera className="h-6 w-6 text-muted-foreground mb-1" />
+                    <span className="text-xs text-muted-foreground">Cliquez pour ajouter une photo</span>
+                    <span className="text-[10px] text-muted-foreground">JPG, PNG, WebP — max 5 Mo</span>
+                    <input
+                      id="photo"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+                ) : (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
+                    <img src={photoPreview} alt="Aperçu" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      className="absolute top-2 right-2 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-white transition-colors"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <MotionTap className="w-full" disabled={!isComplete || !luhnOk || loading}>
@@ -210,7 +267,7 @@ export default function Verify() {
           </CardContent>
         </Card>
 
-        <MlScoreCard imei={imei} enabled={submitted && isComplete && !!luhnOk} />
+        <MlScoreCard imei={imei} enabled={submitted && isComplete && !!luhnOk} photoFile={photoFile} />
 
         <CsvBatchVerify />
       </main>
