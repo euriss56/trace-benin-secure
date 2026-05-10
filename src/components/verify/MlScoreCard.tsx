@@ -129,6 +129,8 @@ export function MlScoreCard({ imei, enabled, photoFile }: MlScoreCardProps) {
             animatedPct={animatedPct}
             luhnOk={luhnOk}
             tac={tac}
+            photoScore={photoScore}
+            hasPhoto={!!photoFile}
           />
         )}
       </CardContent>

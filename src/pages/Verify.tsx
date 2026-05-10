@@ -199,6 +199,45 @@ export default function Verify() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="photo" className="flex items-center gap-2">
+                  <Camera className="h-4 w-4 text-primary" />
+                  Photo de l'appareil
+                  <span className="text-xs text-muted-foreground font-normal">(optionnel)</span>
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ajoutez une photo pour activer l'analyse visuelle de cohérence modèle
+                </p>
+                {!photoPreview ? (
+                  <label
+                    htmlFor="photo"
+                    className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                  >
+                    <Camera className="h-6 w-6 text-muted-foreground mb-1" />
+                    <span className="text-xs text-muted-foreground">Cliquez pour ajouter une photo</span>
+                    <span className="text-[10px] text-muted-foreground">JPG, PNG, WebP — max 5 Mo</span>
+                    <input
+                      id="photo"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+                ) : (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
+                    <img src={photoPreview} alt="Aperçu" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      className="absolute top-2 right-2 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-white transition-colors"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <MotionTap className="w-full" disabled={!isComplete || !luhnOk || loading}>
                 <Button
                   type="submit"
