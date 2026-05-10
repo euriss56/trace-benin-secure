@@ -271,6 +271,56 @@ function ResultDisplay({
           ))}
         </ul>
       </section>
+
+      <section>
+        <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+          <Camera className="h-4 w-4 text-primary" />
+          Cohérence visuelle
+        </div>
+        {!hasPhoto ? (
+          <div className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs border bg-muted/30 border-border">
+            <Camera className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="text-muted-foreground">Analyse visuelle non activée — aucune photo fournie</span>
+          </div>
+        ) : photoScore !== null ? (
+          <div className={cn(
+            "rounded-md px-2.5 py-3 text-xs border space-y-2",
+            photoScore >= 75 ? "bg-success/5 border-success/20" : "bg-destructive/5 border-destructive/20"
+          )}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {photoScore >= 75
+                  ? <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                  : <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                }
+                <span className="font-semibold">
+                  Cohérence photo / modèle : {photoScore}%
+                </span>
+              </div>
+              <span className={cn(
+                "font-mono font-bold text-sm",
+                photoScore >= 75 ? "text-success" : "text-destructive"
+              )}>
+                {photoScore >= 75 ? "✓" : "✗"}
+              </span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn("h-full transition-[width] duration-700 ease-out",
+                  photoScore >= 75 ? "bg-success" : "bg-destructive"
+                )}
+                style={{ width: `${photoScore}%` }}
+              />
+            </div>
+            <p className={cn(photoScore >= 75 ? "text-success" : "text-destructive")}>
+              {photoScore >= 75
+                ? "L'appareil photographié correspond au modèle déclaré dans l'IMEI"
+                : "Incohérence visuelle détectée — modèle photographié incompatible avec le TAC"
+              }
+            </p>
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }

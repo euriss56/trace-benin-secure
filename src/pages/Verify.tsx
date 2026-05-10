@@ -267,7 +267,7 @@ export default function Verify() {
           </CardContent>
         </Card>
 
-        <MlScoreCard imei={imei} enabled={submitted && isComplete && !!luhnOk} />
+        <MlScoreCard imei={imei} enabled={submitted && isComplete && !!luhnOk} photoFile={photoFile} />
 
         <CsvBatchVerify />
       </main>
