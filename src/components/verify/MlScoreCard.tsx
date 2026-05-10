@@ -143,11 +143,15 @@ function ResultDisplay({
   animatedPct,
   luhnOk,
   tac,
+  photoScore,
+  hasPhoto,
 }: {
   result: MlResult;
   animatedPct: number;
   luhnOk: boolean | null;
   tac: string;
+  photoScore: number | null;
+  hasPhoto: boolean;
 }) {
   const safeScore = Math.max(0, Math.min(1, Number.isFinite(result.score) ? result.score : 0.5));
   const pct = animatedPct;
