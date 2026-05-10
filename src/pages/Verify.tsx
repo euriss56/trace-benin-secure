@@ -95,6 +95,20 @@ export default function Verify() {
       ? "border-success focus-visible:ring-success"
       : "border-destructive focus-visible:ring-destructive";
 
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function removePhoto() {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  }
+
   return (
     <>
       <Helmet>

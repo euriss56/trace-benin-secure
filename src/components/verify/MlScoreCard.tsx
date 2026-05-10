@@ -27,7 +27,7 @@ interface MlScoreCardProps {
   photoFile?: File | null;
 }
 
-export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
+export function MlScoreCard({ imei, enabled, photoFile }: MlScoreCardProps) {
   const [result, setResult] = useState<MlResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [animatedPct, setAnimatedPct] = useState(0);
