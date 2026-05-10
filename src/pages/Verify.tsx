@@ -28,6 +28,8 @@ export default function Verify() {
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [fromCache, setFromCache] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const isComplete = imei.length === 15;
   const luhnOk = useMemo(() => (isComplete ? isValidLuhn(imei) : null), [imei, isComplete]);

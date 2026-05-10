@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 interface MlScoreCardProps {
   imei: string;
   enabled: boolean;
+  photoFile?: File | null;
 }
 
 export function MlScoreCard({ imei, enabled }: MlScoreCardProps) {
