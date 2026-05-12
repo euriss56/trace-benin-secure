@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, Loader2, WifiOff, ShieldCheck, CheckCircle2, XCircle, Camera, X as XIcon } from "lucide-react";
+import { Search, Loader2, WifiOff, ShieldCheck, CheckCircle2, XCircle, Camera, X as XIcon, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,14 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { MotionTap } from "@/components/motion/MotionPrimitives";
 import { Trans, useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+
+type StolenRecord = {
+  theft_date: string;
+  neighborhood: string;
+  circumstances: string;
+  created_at: string;
+};
 
 export default function Verify() {
   const { toast } = useToast();
@@ -30,6 +38,7 @@ export default function Verify() {
   const [submitted, setSubmitted] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [stolenRecord, setStolenRecord] = useState<StolenRecord | null>(null);
 
   const isComplete = imei.length === 15;
   const luhnOk = useMemo(() => (isComplete ? isValidLuhn(imei) : null), [imei, isComplete]);
@@ -54,6 +63,7 @@ export default function Verify() {
 
     setLoading(true);
     setSubmitted(true);
+    setStolenRecord(null);
 
     try {
       if (!online) {
@@ -71,10 +81,29 @@ export default function Verify() {
         return;
       }
 
+      // ✅ PRIORITÉ 1 : Vérification dans la base de données TraceIMEI-BJ
+      const { data: stolen, error: stolenError } = await supabase
+        .from("declarations")
+        .select("theft_date, neighborhood, circumstances, created_at")
+        .eq("imei", imei)
+        .maybeSingle();
+
+      if (stolenError) {
+        console.error("Erreur vérification DB:", stolenError);
+      }
+
+      if (stolen) {
+        // Téléphone trouvé dans la DB → signalé volé, pas besoin d'appeler le ML
+        setStolenRecord(stolen);
+        setResult(null);
+        setFromCache(false);
+        return;
+      }
+
+      // ✅ PRIORITÉ 2 : Aucune déclaration → appel API ML
       const r = await verifyImei(imei);
       await cacheResult(r);
       await recordVerification(r);
-      // sauvegarde silencieuse — erreurs RLS ignorées
       setResult(r);
       setFromCache(false);
     } catch (err) {
@@ -167,6 +196,8 @@ export default function Verify() {
                     onChange={(e) => {
                       setImei(sanitizeImei(e.target.value));
                       setSubmitted(false);
+                      setStolenRecord(null);
+                      setResult(null);
                       setPhotoFile(null);
                       setPhotoPreview(null);
                     }}
@@ -267,7 +298,81 @@ export default function Verify() {
           </CardContent>
         </Card>
 
-        <MlScoreCard imei={imei} enabled={submitted && isComplete && !!luhnOk} photoFile={photoFile} />
+        {/* ✅ ALERTE TÉLÉPHONE VOLÉ — priorité absolue sur le ML */}
+        <AnimatePresence>
+          {stolenRecord && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.3 }}
+              className="rounded-xl border-2 border-red-500 bg-red-50 dark:bg-red-950/60 p-5 space-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-red-500 rounded-full p-2">
+                  <AlertTriangle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-red-700 dark:text-red-400 font-bold text-xl">
+                    🚨 TÉLÉPHONE SIGNALÉ VOLÉ
+                  </h2>
+                  <p className="text-red-600 dark:text-red-500 text-sm">
+                    Enregistré dans la base de données TraceIMEI-BJ
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-red-100 dark:bg-red-900/40 rounded-lg p-4 space-y-2 text-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">IMEI</span>
+                    <p className="text-red-800 dark:text-red-200 font-mono font-semibold">{imei}</p>
+                  </div>
+                  <div>
+                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Date du vol</span>
+                    <p className="text-red-800 dark:text-red-200 font-semibold">
+                      {stolenRecord.theft_date
+                        ? new Date(stolenRecord.theft_date).toLocaleDateString("fr-FR")
+                        : "Non précisée"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Quartier</span>
+                    <p className="text-red-800 dark:text-red-200 font-semibold">
+                      {stolenRecord.neighborhood || "Non précisé"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Déclaré le</span>
+                    <p className="text-red-800 dark:text-red-200 font-semibold">
+                      {new Date(stolenRecord.created_at).toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                </div>
+                {stolenRecord.circumstances && (
+                  <div>
+                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Circonstances</span>
+                    <p className="text-red-800 dark:text-red-200 mt-1">{stolenRecord.circumstances}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-start gap-2 bg-red-200/50 dark:bg-red-900/30 rounded-lg p-3">
+                <XCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-700 dark:text-red-400 font-medium">
+                  ⚠️ Ne pas acheter ni accepter ce téléphone. En cas de possession, contactez les autorités compétentes.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ML uniquement si le téléphone n'est PAS dans la DB comme volé */}
+        <MlScoreCard
+          imei={imei}
+          enabled={submitted && isComplete && !!luhnOk && !stolenRecord}
+          photoFile={photoFile}
+        />
 
         <CsvBatchVerify />
       </main>
