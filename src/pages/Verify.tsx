@@ -20,11 +20,14 @@ import { MotionTap } from "@/components/motion/MotionPrimitives";
 import { Trans, useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 
+// Colonnes réelles de la table declarations (vérifiées dans Supabase)
 type StolenRecord = {
   theft_date: string;
-  neighborhood: string;
-  circumstances: string;
+  quartier: string;
+  description: string;
   created_at: string;
+  device_brand: string;
+  device_model: string;
 };
 
 export default function Verify() {
@@ -52,9 +55,7 @@ export default function Verify() {
         setFromCache(true);
       }
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [imei, isComplete, online]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -64,6 +65,7 @@ export default function Verify() {
     setLoading(true);
     setSubmitted(true);
     setStolenRecord(null);
+    setResult(null);
 
     try {
       if (!online) {
@@ -81,26 +83,26 @@ export default function Verify() {
         return;
       }
 
-      // ✅ PRIORITÉ 1 : Vérification dans la base de données TraceIMEI-BJ
+      // ✅ PRIORITÉ 1 : Vérification dans la base TraceIMEI-BJ
       const { data: stolen, error: stolenError } = await supabase
         .from("declarations")
-        .select("theft_date, neighborhood, circumstances, created_at")
+        .select("theft_date, quartier, description, created_at, device_brand, device_model")
         .eq("imei", imei)
         .maybeSingle();
 
       if (stolenError) {
-        console.error("Erreur vérification DB:", stolenError);
+        console.error("Erreur vérification DB:", stolenError.message);
       }
 
       if (stolen) {
-        // Téléphone trouvé dans la DB → signalé volé, pas besoin d'appeler le ML
+        // Téléphone trouvé dans la DB → volé, on n'appelle pas le ML
         setStolenRecord(stolen);
         setResult(null);
         setFromCache(false);
         return;
       }
 
-      // ✅ PRIORITÉ 2 : Aucune déclaration → appel API ML
+      // ✅ PRIORITÉ 2 : Aucune déclaration trouvée → appel API ML
       const r = await verifyImei(imei);
       await cacheResult(r);
       await recordVerification(r);
@@ -322,11 +324,17 @@ export default function Verify() {
                 </div>
               </div>
 
-              <div className="bg-red-100 dark:bg-red-900/40 rounded-lg p-4 space-y-2 text-sm">
-                <div className="grid grid-cols-2 gap-2">
+              <div className="bg-red-100 dark:bg-red-900/40 rounded-lg p-4 space-y-3 text-sm">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-red-500 font-medium text-xs uppercase tracking-wide">IMEI</span>
                     <p className="text-red-800 dark:text-red-200 font-mono font-semibold">{imei}</p>
+                  </div>
+                  <div>
+                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Appareil</span>
+                    <p className="text-red-800 dark:text-red-200 font-semibold">
+                      {stolenRecord.device_brand} {stolenRecord.device_model}
+                    </p>
                   </div>
                   <div>
                     <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Date du vol</span>
@@ -339,20 +347,20 @@ export default function Verify() {
                   <div>
                     <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Quartier</span>
                     <p className="text-red-800 dark:text-red-200 font-semibold">
-                      {stolenRecord.neighborhood || "Non précisé"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Déclaré le</span>
-                    <p className="text-red-800 dark:text-red-200 font-semibold">
-                      {new Date(stolenRecord.created_at).toLocaleDateString("fr-FR")}
+                      {stolenRecord.quartier || "Non précisé"}
                     </p>
                   </div>
                 </div>
-                {stolenRecord.circumstances && (
+                <div>
+                  <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Déclaré le</span>
+                  <p className="text-red-800 dark:text-red-200 font-semibold">
+                    {new Date(stolenRecord.created_at).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+                {stolenRecord.description && (
                   <div>
                     <span className="text-red-500 font-medium text-xs uppercase tracking-wide">Circonstances</span>
-                    <p className="text-red-800 dark:text-red-200 mt-1">{stolenRecord.circumstances}</p>
+                    <p className="text-red-800 dark:text-red-200 mt-1">{stolenRecord.description}</p>
                   </div>
                 )}
               </div>
