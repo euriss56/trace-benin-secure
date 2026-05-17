@@ -10,7 +10,11 @@ export default function Privacy() {
       <Helmet>
         <title>{t('privacy.metaTitle')}</title>
         <meta name="description" content={t('privacy.metaDescription')} />
-        <link rel="canonical" href="/privacy" />
+        <link rel="canonical" href="https://trace-benin-secure.lovable.app/privacy" />
+        <meta property="og:title" content={t('privacy.metaTitle')} />
+        <meta property="og:description" content={t('privacy.metaDescription')} />
+        <meta property="og:url" content="https://trace-benin-secure.lovable.app/privacy" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <main className="container max-w-4xl py-10 space-y-8">

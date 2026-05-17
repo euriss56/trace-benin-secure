@@ -145,7 +145,11 @@ export default function Verify() {
       <Helmet>
         <title>{t("verify.metaTitle")}</title>
         <meta name="description" content={t("verify.metaDescription")} />
-        <link rel="canonical" href="/verify" />
+        <link rel="canonical" href="https://trace-benin-secure.lovable.app/verify" />
+        <meta property="og:title" content={t("verify.metaTitle")} />
+        <meta property="og:description" content={t("verify.metaDescription")} />
+        <meta property="og:url" content="https://trace-benin-secure.lovable.app/verify" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <main className="container max-w-3xl py-10 space-y-6">
