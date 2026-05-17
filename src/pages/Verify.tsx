@@ -263,6 +263,7 @@ export default function Verify() {
                     <button
                       type="button"
                       onClick={removePhoto}
+                      aria-label="Retirer la photo"
                       className="absolute top-2 right-2 bg-background/80 rounded-full p-1 hover:bg-destructive hover:text-white transition-colors"
                     >
                       <XIcon className="h-4 w-4" />
