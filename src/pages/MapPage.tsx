@@ -149,6 +149,11 @@ export default function MapPage() {
       <Helmet>
         <title>{t('map.metaTitle')}</title>
         <meta name="description" content={t('map.metaDescription')} />
+        <link rel="canonical" href="https://trace-benin-secure.lovable.app/map" />
+        <meta property="og:title" content={t('map.metaTitle')} />
+        <meta property="og:description" content={t('map.metaDescription')} />
+        <meta property="og:url" content="https://trace-benin-secure.lovable.app/map" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <div className="container py-8">
@@ -175,9 +180,9 @@ export default function MapPage() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">{t('map.period')}</label>
+              <label htmlFor="filter-period" className="text-xs text-muted-foreground mb-1 block">{t('map.period')}</label>
               <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="filter-period" aria-label={t('map.period')}><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="7">{t('map.period7')}</SelectItem>
                   <SelectItem value="30">{t('map.period30')}</SelectItem>
@@ -187,9 +192,9 @@ export default function MapPage() {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">{t('map.statusLabel')}</label>
+              <label htmlFor="filter-status" className="text-xs text-muted-foreground mb-1 block">{t('map.statusLabel')}</label>
               <Select value={status} onValueChange={(v) => setStatus(v as Status)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="filter-status" aria-label={t('map.statusLabel')}><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('map.statusAll')}</SelectItem>
                   <SelectItem value="declared">{t('map.statusDeclared')}</SelectItem>
@@ -199,9 +204,9 @@ export default function MapPage() {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">{t('map.quartierLabel')}</label>
+              <label htmlFor="filter-quartier" className="text-xs text-muted-foreground mb-1 block">{t('map.quartierLabel')}</label>
               <Select value={quartier} onValueChange={(v) => setQuartier(v as Quartier | 'all')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="filter-quartier" aria-label={t('map.quartierLabel')}><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('map.quartierAll')}</SelectItem>
                   {COTONOU_QUARTIERS.map((q) => (
