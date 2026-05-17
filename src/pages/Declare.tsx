@@ -189,10 +189,6 @@ export default function Declare() {
         <meta property="og:url" content="https://trace-benin-secure.lovable.app/declare" />
         <meta property="og:type" content="website" />
       </Helmet>
-        <title>{t("declare.metaTitle")}</title>
-        <meta name="description" content={t("declare.metaDescription")} />
-        <link rel="canonical" href="/declare" />
-      </Helmet>
 
       <main className="container max-w-2xl py-10 space-y-6">
         <header className="space-y-2">
