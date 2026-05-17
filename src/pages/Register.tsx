@@ -64,7 +64,7 @@ export default function Register() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Shield className="h-6 w-6" />
           </div>
-          <CardTitle>{t('auth.registerTitle')}</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">{t('auth.registerTitle')}</h1>
           <CardDescription>{t('auth.registerDesc')}</CardDescription>
         </CardHeader>
         <CardContent>

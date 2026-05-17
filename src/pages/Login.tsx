@@ -61,7 +61,7 @@ export default function Login() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Shield className="h-6 w-6" />
           </div>
-          <CardTitle>{t('auth.loginTitle')}</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">{t('auth.loginTitle')}</h1>
           <CardDescription>{t('auth.loginDesc')}</CardDescription>
         </CardHeader>
         <CardContent>

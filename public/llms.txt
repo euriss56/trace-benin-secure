@@ -1,0 +1,16 @@
+# TraceIMEI-BJ
+
+> Plateforme béninoise de vérification IMEI et de signalement de téléphones volés, conforme à la loi 2017-20.
+
+## Pages
+
+- [Accueil](/): Présentation de la plateforme et des acteurs (dealer, atelier, police, particulier).
+- [Vérifier un IMEI](/verify): Vérification d'un numéro IMEI avec validation Luhn, score ML et croisement avec la base des téléphones volés.
+- [Déclarer un vol](/declare): Formulaire de déclaration de vol (marque, modèle, IMEI, quartier de Cotonou, photo).
+- [Contacts Police](/contacts-police): Annuaire des commissariats de la Police Républicaine du Bénin.
+- [Confidentialité](/privacy): Politique de confidentialité et conformité loi 2017-20.
+
+## Optional
+
+- [Connexion](/login)
+- [Inscription](/register)

@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Phone, MapPin, Search, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -54,8 +55,31 @@ export default function PoliceContacts() {
     setFiltered(result);
   }, [search, dept, contacts]);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contacts de la Police Républicaine du Bénin',
+    about: filtered.slice(0, 50).map((c) => ({
+      '@type': 'LocalBusiness',
+      name: `${c.city} — ${c.commissioner_name}`,
+      telephone: c.phone,
+      email: c.email ?? undefined,
+      address: c.address ?? undefined,
+    })),
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <Helmet>
+        <title>Contacts Police Bénin — TraceIMEI-BJ</title>
+        <meta name="description" content="Annuaire des commissariats de la Police Républicaine du Bénin : téléphone, adresse et e-mail pour signaler un vol de téléphone." />
+        <link rel="canonical" href="https://trace-benin-secure.lovable.app/contacts-police" />
+        <meta property="og:title" content="Contacts Police Bénin — TraceIMEI-BJ" />
+        <meta property="og:description" content="Annuaire des commissariats de la Police Républicaine du Bénin pour signaler un vol de téléphone." />
+        <meta property="og:url" content="https://trace-benin-secure.lovable.app/contacts-police" />
+        <meta property="og:type" content="website" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary">
           <Shield className="h-8 w-8 text-white" />
@@ -70,15 +94,21 @@ export default function PoliceContacts() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <label htmlFor="police-search" className="sr-only">Rechercher une ville ou un commissariat</label>
           <input
+            id="police-search"
             type="text"
             placeholder="Rechercher une ville ou un commissariat..."
+            aria-label="Rechercher une ville ou un commissariat"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
+        <label htmlFor="police-dept" className="sr-only">Filtrer par département</label>
         <select
+          id="police-dept"
+          aria-label="Filtrer par département"
           value={dept}
           onChange={e => setDept(e.target.value)}
           className="rounded-md border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"

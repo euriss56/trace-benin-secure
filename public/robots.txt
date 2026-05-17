@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://trace-benin-secure.lovable.app/sitemap.xml
