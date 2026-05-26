@@ -1,243 +1,136 @@
-@import "tailwindcss" source(none);
-@source "../src";
-@import "tw-animate-css";
+@import "tailwindcss";
+
+/* =========================
+   TRACEIMEI-BJ DESIGN SYSTEM
+   Tailwind v4 + SaaS + Benin Flag
+========================= */
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * TraceIMEI-BJ Design System
- * Premium SaaS aesthetic + Benin Flag Stripe
- */
-
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius: 0.75rem;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary-glow: var(--primary-glow);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
-  --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-display: "Poppins", "Inter", system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04),
-    0 4px 12px oklch(0 0 0 / 0.04);
-
-  --shadow-elevated: 0 1px 2px oklch(0 0 0 / 0.05),
-    0 8px 24px oklch(0 0 0 / 0.08);
-
-  --shadow-glow: 0 0 0 1px oklch(0.62 0.13 165 / 0.18),
-    0 8px 32px oklch(0.62 0.13 165 / 0.22);
-
-  --gradient-primary: linear-gradient(
-    135deg,
-    oklch(0.58 0.14 165) 0%,
-    oklch(0.45 0.12 168) 100%
-  );
-
-  --gradient-hero: radial-gradient(
-    ellipse 80% 60% at 50% -10%,
-    oklch(0.62 0.13 165 / 0.18),
-    transparent 60%
-  );
-
-  --gradient-glass: linear-gradient(
-    135deg,
-    oklch(1 0 0 / 0.6) 0%,
-    oklch(1 0 0 / 0.3) 100%
-  );
+  --font-sans: Inter, system-ui, sans-serif;
 }
+
+/* =========================
+   BASE COLORS
+========================= */
 
 :root {
-  --radius: 0.75rem;
+  --background: #f9fafb;
+  --foreground: #111827;
 
-  /* Benin Flag Colors */
-  --benin-green: 152 100% 26%;
-  --benin-yellow: 51 97% 54%;
-  --benin-red: 352 84% 49%;
+  --card: #ffffff;
+  --card-foreground: #111827;
 
-  /* Backgrounds */
-  --background: oklch(0.985 0.003 247);
-  --foreground: oklch(0.15 0.02 260);
+  --primary: #059669;
+  --primary-foreground: #ffffff;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.02 260);
+  --secondary: #f3f4f6;
+  --muted: #e5e7eb;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 260);
+  --border: #e5e7eb;
+  --ring: #059669;
 
-  /* Emerald Brand */
-  --primary: oklch(0.58 0.14 165);
-  --primary-foreground: oklch(0.99 0.005 165);
-  --primary-glow: oklch(0.72 0.16 162);
+  /* BENIN COLORS */
+  --benin-green: #008751;
+  --benin-yellow: #FCD116;
+  --benin-red: #E8112D;
 
-  --secondary: oklch(0.97 0.008 247);
-  --secondary-foreground: oklch(0.2 0.02 260);
-
-  --muted: oklch(0.97 0.008 247);
-  --muted-foreground: oklch(0.5 0.02 260);
-
-  --accent: oklch(0.95 0.04 165);
-  --accent-foreground: oklch(0.35 0.12 168);
-
-  --destructive: oklch(0.63 0.23 27);
-  --destructive-foreground: oklch(0.99 0 0);
-
-  --success: oklch(0.7 0.17 160);
-  --success-foreground: oklch(0.99 0 0);
-
-  --warning: oklch(0.77 0.16 75);
-  --warning-foreground: oklch(0.2 0.05 60);
-
-  --border: oklch(0.92 0.01 255);
-  --input: oklch(0.94 0.01 255);
-  --ring: oklch(0.58 0.14 165);
-
-  /* Benin Flag Gradient */
   --gradient-flag: linear-gradient(
     90deg,
-    hsl(var(--benin-green)) 0%,
-    hsl(var(--benin-green)) 50%,
-    hsl(var(--benin-yellow)) 50%,
-    hsl(var(--benin-yellow)) 75%,
-    hsl(var(--benin-red)) 75%,
-    hsl(var(--benin-red)) 100%
+    var(--benin-green) 0%,
+    var(--benin-green) 50%,
+    var(--benin-yellow) 50%,
+    var(--benin-yellow) 75%,
+    var(--benin-red) 75%,
+    var(--benin-red) 100%
   );
 }
 
+/* DARK MODE */
 .dark {
-  --background: oklch(0.13 0.02 260);
-  --foreground: oklch(0.98 0.003 247);
+  --background: #0f172a;
+  --foreground: #f9fafb;
 
-  --card: oklch(0.18 0.02 260);
-  --card-foreground: oklch(0.98 0.003 247);
+  --card: #111827;
+  --card-foreground: #f9fafb;
 
-  --popover: oklch(0.18 0.02 260);
-  --popover-foreground: oklch(0.98 0.003 247);
+  --primary: #10b981;
+  --primary-foreground: #0f172a;
 
-  --primary: oklch(0.72 0.16 162);
-  --primary-foreground: oklch(0.13 0.04 165);
-  --primary-glow: oklch(0.78 0.17 162);
+  --secondary: #1f2937;
+  --muted: #374151;
 
-  --secondary: oklch(0.24 0.02 260);
-  --secondary-foreground: oklch(0.98 0.003 247);
-
-  --muted: oklch(0.24 0.02 260);
-  --muted-foreground: oklch(0.68 0.02 260);
-
-  --accent: oklch(0.28 0.05 165);
-  --accent-foreground: oklch(0.85 0.1 162);
-
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.99 0 0);
-
-  --border: oklch(1 0 0 / 0.08);
-  --input: oklch(1 0 0 / 0.12);
-  --ring: oklch(0.72 0.16 162);
+  --border: #1f2937;
+  --ring: #10b981;
 }
 
+/* =========================
+   BASE STYLES
+========================= */
+
 @layer base {
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: url("https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2")
-      format("woff2");
-  }
-
   * {
-    border-color: var(--color-border);
-  }
-
-  html {
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    border-color: var(--border);
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-feature-settings: "cv11", "ss01";
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5 {
-    font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
 }
 
+/* =========================
+   UTILITIES
+========================= */
+
 @layer utilities {
-  /* Benin Stripe */
+
+  /* 🔥 BENIN STRIPE */
   .benin-stripe {
     height: 4px;
     width: 100%;
     background: var(--gradient-flag);
   }
 
+  /* Glass effect */
   .glass {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid oklch(1 0 0 / 0.12);
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
   }
 
   .dark .glass {
-    background: linear-gradient(
-      135deg,
-      oklch(1 0 0 / 0.06) 0%,
-      oklch(1 0 0 / 0.02) 100%
-    );
-
-    border: 1px solid oklch(1 0 0 / 0.08);
+    background: rgba(17, 24, 39, 0.6);
   }
 
+  /* Gradient text */
   .gradient-text {
-    background: var(--gradient-primary);
+    background: linear-gradient(90deg, var(--benin-green), var(--benin-yellow), var(--benin-red));
     -webkit-background-clip: text;
-    background-clip: text;
     color: transparent;
   }
 
+  /* Shadows */
   .shadow-soft {
-    box-shadow: var(--shadow-soft);
-  }
-
-  .shadow-elevated {
-    box-shadow: var(--shadow-elevated);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   }
 
   .shadow-glow {
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 0 30px rgba(5, 150, 105, 0.25);
   }
 }
