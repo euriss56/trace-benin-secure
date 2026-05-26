@@ -242,7 +242,8 @@
       "cases": "Cases",
       "map": "Map",
       "users": "Users",
-      "metrics": "ML metrics"
+      "metrics": "ML metrics",
+      "profile": "My profile"
     },
     "overview": {
       "title": "Overview",
@@ -437,5 +438,30 @@
     "title": "Page not found",
     "description": "The page <code>{{path}}</code> does not exist or has been moved.",
     "back": "Back to home"
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Personal information, avatar and password.",
+    "avatarAlt": "Profile picture",
+    "changeAvatar": "Change picture",
+    "avatarTooBig": "Image too large (max 2 MB)",
+    "avatarError": "Upload failed",
+    "avatarSuccess": "Picture updated",
+    "trustLevel": "Trust level",
+    "infoTitle": "Personal information",
+    "firstName": "First name",
+    "firstNamePlaceholder": "Your first name",
+    "lastName": "Last name",
+    "lastNamePlaceholder": "Your last name",
+    "saveSuccess": "Profile updated",
+    "saveError": "Error saving profile",
+    "pwdTitle": "Change password",
+    "newPwd": "New password",
+    "confirmPwd": "Confirm password",
+    "pwdMinLength": "Minimum 8 characters",
+    "pwdMismatch": "Passwords do not match",
+    "pwdSubmit": "Update password",
+    "pwdSuccess": "Password updated",
+    "pwdError": "Error changing password"
   }
 }
