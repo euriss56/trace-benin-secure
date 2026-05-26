@@ -8,6 +8,7 @@ import {
   Users,
   BarChart3,
   History,
+  UserCircle2,
 } from 'lucide-react';
 import { useAuth, type AppRole } from '@/hooks/useAuth';
 import { useStolenAlerts } from '@/hooks/useStolenAlerts';
@@ -29,6 +30,7 @@ const NAV: NavItem[] = [
   { to: '/dashboard/map', labelKey: 'dashboard.nav.map', icon: MapIcon, roles: ['enqueteur', 'admin'] },
   { to: '/dashboard/users', labelKey: 'dashboard.nav.users', icon: Users, roles: ['admin'] },
   { to: '/dashboard/metrics', labelKey: 'dashboard.nav.metrics', icon: BarChart3, roles: ['admin'] },
+  { to: '/dashboard/profile', labelKey: 'dashboard.nav.profile', icon: UserCircle2 },
 ];
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
