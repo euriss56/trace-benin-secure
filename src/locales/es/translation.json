@@ -242,7 +242,8 @@
       "cases": "Casos",
       "map": "Mapa",
       "users": "Usuarios",
-      "metrics": "Métricas ML"
+      "metrics": "Métricas ML",
+      "profile": "Mi perfil"
     },
     "overview": {
       "title": "Resumen",
@@ -437,5 +438,30 @@
     "title": "Página no encontrada",
     "description": "La página <code>{{path}}</code> no existe o ha sido movida.",
     "back": "Volver al inicio"
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "subtitle": "Información personal, avatar y contraseña.",
+    "avatarAlt": "Foto de perfil",
+    "changeAvatar": "Cambiar foto",
+    "avatarTooBig": "Imagen demasiado grande (máx 2 MB)",
+    "avatarError": "Error al subir",
+    "avatarSuccess": "Foto actualizada",
+    "trustLevel": "Nivel de confianza",
+    "infoTitle": "Información personal",
+    "firstName": "Nombre",
+    "firstNamePlaceholder": "Tu nombre",
+    "lastName": "Apellido",
+    "lastNamePlaceholder": "Tu apellido",
+    "saveSuccess": "Perfil actualizado",
+    "saveError": "Error al guardar",
+    "pwdTitle": "Cambiar contraseña",
+    "newPwd": "Nueva contraseña",
+    "confirmPwd": "Confirmar contraseña",
+    "pwdMinLength": "Mínimo 8 caracteres",
+    "pwdMismatch": "Las contraseñas no coinciden",
+    "pwdSubmit": "Actualizar contraseña",
+    "pwdSuccess": "Contraseña actualizada",
+    "pwdError": "Error al cambiar la contraseña"
   }
 }
