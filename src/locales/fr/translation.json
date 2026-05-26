@@ -242,7 +242,8 @@
       "cases": "Signalements",
       "map": "Carte",
       "users": "Utilisateurs",
-      "metrics": "Métriques ML"
+      "metrics": "Métriques ML",
+      "profile": "Mon profil"
     },
     "overview": {
       "title": "Vue d'ensemble",
@@ -437,5 +438,30 @@
     "title": "Page introuvable",
     "description": "La page <code>{{path}}</code> n'existe pas ou a été déplacée.",
     "back": "Retour à l'accueil"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "subtitle": "Informations personnelles, avatar et mot de passe.",
+    "avatarAlt": "Photo de profil",
+    "changeAvatar": "Changer la photo",
+    "avatarTooBig": "Image trop lourde (max 2 Mo)",
+    "avatarError": "Échec du téléchargement",
+    "avatarSuccess": "Photo mise à jour",
+    "trustLevel": "Niveau de confiance",
+    "infoTitle": "Informations personnelles",
+    "firstName": "Prénom",
+    "firstNamePlaceholder": "Votre prénom",
+    "lastName": "Nom",
+    "lastNamePlaceholder": "Votre nom",
+    "saveSuccess": "Profil mis à jour",
+    "saveError": "Erreur lors de la sauvegarde",
+    "pwdTitle": "Changer le mot de passe",
+    "newPwd": "Nouveau mot de passe",
+    "confirmPwd": "Confirmer le mot de passe",
+    "pwdMinLength": "Minimum 8 caractères",
+    "pwdMismatch": "Les mots de passe ne correspondent pas",
+    "pwdSubmit": "Mettre à jour",
+    "pwdSuccess": "Mot de passe mis à jour",
+    "pwdError": "Erreur lors du changement"
   }
 }
