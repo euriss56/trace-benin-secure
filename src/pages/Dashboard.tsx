@@ -8,6 +8,7 @@ import { MyDeclarationsView } from '@/components/dashboard/MyDeclarationsView';
 import { CasesView } from '@/components/dashboard/CasesView';
 import { UsersView } from '@/components/dashboard/UsersView';
 import { MetricsView } from '@/components/dashboard/MetricsView';
+import { ProfileView } from '@/components/dashboard/ProfileView';
 import MapPage from './MapPage';
 import { useTranslation } from 'react-i18next';
 
@@ -54,6 +55,7 @@ export default function Dashboard() {
             path="metrics"
             element={role === 'admin' ? <MetricsView /> : <Navigate to="/dashboard" replace />}
           />
+          <Route path="profile" element={<ProfileView />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </DashboardLayout>
