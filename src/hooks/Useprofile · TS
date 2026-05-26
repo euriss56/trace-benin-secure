@@ -1,0 +1,50 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth, type AppRole } from './useAuth';
+
+export type UserRole = AppRole;
+
+export interface Profile {
+  id: string;
+  prenom: string | null;
+  nom: string | null;
+  role: UserRole;
+  avatar_url: string | null;
+  niveau_confiance: number | null;
+}
+
+export function useProfile() {
+  const { user, role: authRole, loading: authLoading } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, prenom, nom, role, avatar_url, niveau_confiance')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (!cancel) {
+        setProfile((data as Profile | null) ?? null);
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [user, authLoading]);
+
+  return {
+    profile,
+    loading: loading || authLoading,
+    role: (profile?.role ?? authRole ?? 'particulier') as UserRole,
+  };
+}
