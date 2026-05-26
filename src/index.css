@@ -1,136 +1,312 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* =========================
-   TRACEIMEI-BJ DESIGN SYSTEM
-   Tailwind v4 + SaaS + Benin Flag
-========================= */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Design system TraceIMEI-BJ — couleurs du drapeau du Bénin
+ * Vert (#008751) · Jaune (#FCD116) · Rouge (#E8112D)
+ * Tous les tokens en HSL.
+ */
 
-@theme inline {
-  --radius: 0.75rem;
+@layer base {
+  :root {
+    /* Drapeau Bénin */
+    --benin-green: 152 100% 26%;       /* #008751 */
+    --benin-yellow: 51 97% 54%;        /* #FCD116 */
+    --benin-red: 352 84% 49%;          /* #E8112D */
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
+    --background: 60 33% 99%;
+    --foreground: 200 25% 12%;
 
-  --font-sans: Inter, system-ui, sans-serif;
+    --card: 0 0% 100%;
+    --card-foreground: 200 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 25% 12%;
+
+    --primary: 152 100% 26%;
+    --primary-foreground: 60 33% 99%;
+    --primary-glow: 152 70% 42%;
+
+    --secondary: 60 20% 96%;
+    --secondary-foreground: 200 25% 14%;
+
+    --muted: 60 18% 95%;
+    --muted-foreground: 200 12% 42%;
+
+    --accent: 51 97% 54%;
+    --accent-foreground: 40 50% 14%;
+
+    --destructive: 352 84% 49%;
+    --destructive-foreground: 60 33% 99%;
+
+    --success: 152 70% 38%;
+    --success-foreground: 60 33% 99%;
+
+    --warning: 38 95% 55%;
+    --warning-foreground: 40 50% 14%;
+
+    --border: 150 18% 90%;
+    --input: 150 18% 90%;
+    --ring: 152 100% 26%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 60 33% 99%;
+    --sidebar-foreground: 200 25% 14%;
+    --sidebar-primary: 152 100% 26%;
+    --sidebar-primary-foreground: 60 33% 99%;
+    --sidebar-accent: 60 18% 95%;
+    --sidebar-accent-foreground: 200 25% 14%;
+    --sidebar-border: 150 18% 90%;
+    --sidebar-ring: 152 100% 26%;
+
+    /* Gradients & shadows */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-flag: linear-gradient(
+      90deg,
+      hsl(var(--benin-green)) 0%,
+      hsl(var(--benin-green)) 50%,
+      hsl(var(--benin-yellow)) 50%,
+      hsl(var(--benin-yellow)) 75%,
+      hsl(var(--benin-red)) 75%,
+      hsl(var(--benin-red)) 100%
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(var(--benin-green) / 0.08) 0%,
+      hsl(var(--benin-yellow) / 0.06) 50%,
+      hsl(var(--benin-red) / 0.05) 100%
+    );
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.25);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.35);
+  }
+
+  .dark {
+    --background: 200 25% 9%;
+    --foreground: 60 33% 97%;
+
+    --card: 200 22% 13%;
+    --card-foreground: 60 33% 97%;
+
+    --popover: 200 22% 13%;
+    --popover-foreground: 60 33% 97%;
+
+    --primary: 152 70% 45%;
+    --primary-foreground: 200 25% 9%;
+    --primary-glow: 152 75% 55%;
+
+    --secondary: 200 18% 18%;
+    --secondary-foreground: 60 33% 97%;
+
+    --muted: 200 18% 18%;
+    --muted-foreground: 200 12% 65%;
+
+    --accent: 51 90% 55%;
+    --accent-foreground: 40 50% 14%;
+
+    --destructive: 352 80% 55%;
+    --destructive-foreground: 60 33% 97%;
+
+    --success: 152 70% 50%;
+    --success-foreground: 200 25% 9%;
+
+    --warning: 38 95% 60%;
+    --warning-foreground: 40 50% 14%;
+
+    --border: 0 0% 100% / 0.1;
+    --border: 200 18% 22%;
+    --input: 200 18% 22%;
+    --ring: 152 70% 45%;
+
+    --sidebar-background: 200 25% 11%;
+    --sidebar-foreground: 60 33% 97%;
+    --sidebar-primary: 152 70% 45%;
+    --sidebar-primary-foreground: 200 25% 9%;
+    --sidebar-accent: 200 18% 18%;
+    --sidebar-accent-foreground: 60 33% 97%;
+    --sidebar-border: 200 18% 22%;
+    --sidebar-ring: 152 70% 45%;
+  }
 }
-
-/* =========================
-   BASE COLORS
-========================= */
-
-:root {
-  --background: #f9fafb;
-  --foreground: #111827;
-
-  --card: #ffffff;
-  --card-foreground: #111827;
-
-  --primary: #059669;
-  --primary-foreground: #ffffff;
-
-  --secondary: #f3f4f6;
-  --muted: #e5e7eb;
-
-  --border: #e5e7eb;
-  --ring: #059669;
-
-  /* BENIN COLORS */
-  --benin-green: #008751;
-  --benin-yellow: #FCD116;
-  --benin-red: #E8112D;
-
-  --gradient-flag: linear-gradient(
-    90deg,
-    var(--benin-green) 0%,
-    var(--benin-green) 50%,
-    var(--benin-yellow) 50%,
-    var(--benin-yellow) 75%,
-    var(--benin-red) 75%,
-    var(--benin-red) 100%
-  );
-}
-
-/* DARK MODE */
-.dark {
-  --background: #0f172a;
-  --foreground: #f9fafb;
-
-  --card: #111827;
-  --card-foreground: #f9fafb;
-
-  --primary: #10b981;
-  --primary-foreground: #0f172a;
-
-  --secondary: #1f2937;
-  --muted: #374151;
-
-  --border: #1f2937;
-  --ring: #10b981;
-}
-
-/* =========================
-   BASE STYLES
-========================= */
 
 @layer base {
   * {
-    border-color: var(--border);
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Smooth transitions globales */
+  button,
+  a,
+  [role="button"] {
+    @apply transition-all duration-200 ease-smooth;
+  }
+
+  /* Effet de pression au click */
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+  }
+
+  /* Focus glow subtil sur les inputs */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.18);
+  }
+
+  /* Scrollbar moderne */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.25);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.45);
+    background-clip: padding-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* =========================
-   UTILITIES
-========================= */
-
 @layer utilities {
-
-  /* 🔥 BENIN STRIPE */
   .benin-stripe {
     height: 4px;
     width: 100%;
     background: var(--gradient-flag);
   }
 
-  /* Glass effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
+  .gradient-primary {
+    background: var(--gradient-primary);
   }
 
-  .dark .glass {
-    background: rgba(17, 24, 39, 0.6);
+  .gradient-hero {
+    background: var(--gradient-hero);
   }
 
-  /* Gradient text */
-  .gradient-text {
-    background: linear-gradient(90deg, var(--benin-green), var(--benin-yellow), var(--benin-red));
+  .text-gradient-primary {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--benin-green)),
+      hsl(var(--benin-yellow)),
+      hsl(var(--benin-red))
+    );
     -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
   }
 
-  /* Shadows */
-  .shadow-soft {
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
   }
 
   .shadow-glow {
-    box-shadow: 0 0 30px rgba(5, 150, 105, 0.25);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Card hover : élévation + scale léger */
+  .hover-lift {
+    @apply transition-all duration-300 ease-smooth;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 32px -12px hsl(var(--foreground) / 0.18);
+  }
+
+  /* Scale léger au hover */
+  .hover-scale {
+    @apply transition-transform duration-200 ease-smooth;
+  }
+  .hover-scale:hover { transform: scale(1.02); }
+
+  /* Icône qui pivote/scale subtilement au hover */
+  .icon-hover {
+    @apply transition-transform duration-200 ease-spring;
+  }
+  .icon-hover:hover { transform: rotate(-6deg) scale(1.1); }
+
+  /* Underline animé pour liens */
+  .story-link {
+    position: relative;
+    display: inline-block;
+  }
+  .story-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 2px;
+    width: 100%;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease;
+  }
+  .story-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+
+  /* Glassmorphism léger */
+  .glass {
+    background: hsl(var(--card) / 0.65);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  /* Apparition au scroll (déclenché par hook useRevealOnScroll) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Stagger : enfants apparaissent en cascade */
+  .stagger > * { animation: fade-in-up 0.5s ease-out both; }
+  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.20s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.30s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.35s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.40s; }
+
+  /* Skeleton shimmer */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.12) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
   }
 }
